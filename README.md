@@ -8,7 +8,7 @@ mkdir bin
 make
 ```
 
-# Machine Destription
+# Machine Description
 1. Processor
 ```sh
 # for cpu info
@@ -32,7 +32,7 @@ sudo lshw -C memory
 ```sh
 lspci
 ```
-- SATA Controller: PCI, ???
+- SATA Controller: link up 6.0Gbps
 4. Disk
 ```sh
 iostat -dx
