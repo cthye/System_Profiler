@@ -7,3 +7,59 @@ Report on [OverLeaf](https://www.overleaf.com/read/trttfkjfsvgq)
 mkdir bin
 make
 ```
+
+# Machine Destription
+1. Processor
+```sh
+# for cpu info
+cat /proc/cpuinfo
+
+# for cache L1, L2, L3
+lscpu | grep "cache"
+```
+- Process Model: Intel(R) Core(TM) i5-7200U @ 2.50GHz x 4
+- Cycle Time: 800.000 MHz (max: 3100.0000 MHz, min: 400.0000)
+- Cache Sizes: 3072KB (L1d: 32K, L1i: 32K, L2:256K, L3:3072K)
+2. DRAM (Memory)
+```sh
+sudo lshw -C memory
+```
+- DRAM type: SODIMM
+- Clock: 2400MHz (0.4ns)
+- Capacity: 8GiB
+- Bus bandwidth: 64bits
+3. I/O
+```sh
+lspci
+```
+- SATA Controller: PCI, ???
+4. Disk
+```sh
+iostat -dx
+sudo hdparm -tT /dev/sda # depends on the device
+```
+- SSD: 
+  - Model: [TOSHIBA THNSNK128GVN8](https://smarthdd.com/database/TOSHIBA-THNSNK128GVN8/K8AS4102/) (K8AS4102)
+  - Capacity: 128G
+  - Transfer rate(maximum interface speed): 600 MB/s
+  - IOPs: Not mentioned in specs???
+  - Latencies: Not mentioned in specs???
+- HDD: 
+    - Model: [ST1000LM035-1RK172](https://www.disctech.com/Seagate-ST1000LM035-1TB-SATA-Hard-Drive) (SDM1) 
+    - Capacity: 1TB 
+    - RPM: 5400
+    - Transfer rate: 140 MB/s
+    - Latencies: Not mentioned in specs???
+5. Network
+```sh
+sudo ethtool enx144fd7c3f0d0 # depends on the interface name
+lwconfig wlp2s0 # depends on the interface name
+```
+- Ethernet
+  - Bandwidth: 1000 Mb/s
+- Wireless
+  - Bandwidth: 400 Mb/s
+6. Operating System
+- Ubuntu 16.04.4 LTS
+7. Notebook Description
+- ASUSTeK X510UQ
