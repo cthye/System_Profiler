@@ -24,13 +24,14 @@ lscpu | grep "cache"
 ```sh
 sudo lshw -C memory
 ```
-- DRAM type: SODIMM
+- Model: [HMA81GS6AFR8N-UH SK Hynix 8GB 2400 SODIMM](https://memory.net/product/hma81gs6afr8n-uh-sk-hynix-1x-8gb-ddr4-2400-sodimm-pc4-19200t-s-single-rank-x8-module/)
+- DRAM type: SODIMM (DDR4)
 - Clock: 2400MHz (0.4ns)
 - Capacity: 8GiB
 - Bus bandwidth: 64bits
 3. I/O
 ```sh
-lspci
+lspci -v
 ```
 - SATA Controller: link up 6.0Gbps
 4. Disk
