@@ -5,8 +5,8 @@
 #include <math.h>
 #include <pthread.h>
 
-#define SIZE_OF_STAT 1000
-#define BOUND_OF_LOOP 100
+#define SIZE_OF_STAT 10
+#define BOUND_OF_LOOP 10
 
 void *thread(void *arg) {
     pthread_exit(NULL);
