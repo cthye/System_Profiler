@@ -78,9 +78,6 @@ int main() {
             :: "%rax", "%rbx", "%rcx", "%rdx"
             );
             pid_t pid = fork();
-            if (pid == 0) {
-                return 0;
-            }
             __asm__ volatile(
             "rdtscp\n\t"
             "mov %%edx, %0\n\t"
@@ -88,6 +85,9 @@ int main() {
             "cpuid\n\t": "=r" (cycles_high1), "=r" (cycles_low1)
             :: "%rax", "%rbx", "%rcx", "%rdx"
             );
+            if (pid == 0) {
+                return 0;
+            }
             start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
             end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
             sum += (end - start);
