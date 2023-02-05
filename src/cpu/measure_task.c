@@ -88,6 +88,7 @@ int main() {
             if (pid == 0) {
                 exit(1);
             } else {
+                wait(NULL);
                 start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
                 end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
                 sum += (end - start);
