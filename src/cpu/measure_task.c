@@ -77,7 +77,10 @@ int main() {
             : "=r" (cycles_high0), "=r" (cycles_low0)
             :: "%rax", "%rbx", "%rcx", "%rdx"
             );
-            //int pid = fork();
+            pid_t pid = fork();
+            if (pid == 0) {
+                return 0;
+            }
             __asm__ volatile(
             "rdtscp\n\t"
             "mov %%edx, %0\n\t"
