@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include <math.h>
 #include <pthread.h>
@@ -88,13 +89,14 @@ int main() {
                 );
                 if (pid == 0) {
                     exit(1);
-                }
-                start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
-                end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
-                sum += (end - start);
-                printf("%lu ", end - start);
-                if (j != 0 && j % 20 == 0) {
-                    printf("\n");
+                } else {
+                    start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
+                    end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
+                    sum += (end - start);
+                    printf("%lu ", end - start);
+                    if (j != 0 && j % 20 == 0) {
+                        printf("\n");
+                    }
                 }
             }
             means[i] = (double)sum / SIZE_OF_STAT;
