@@ -78,6 +78,9 @@ int main() {
             :: "%rax", "%rbx", "%rcx", "%rdx"
             );
             int pid = fork();
+            if (pid == 0) {
+                exit(1);
+            }
             __asm__ volatile(
             "rdtscp\n\t"
             "mov %%edx, %0\n\t"
@@ -85,17 +88,12 @@ int main() {
             "cpuid\n\t": "=r" (cycles_high1), "=r" (cycles_low1)
             :: "%rax", "%rbx", "%rcx", "%rdx"
             );
-            if (pid == 0) {
-                exit(1);
-            } else {
-                wait(NULL);
-                start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
-                end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
-                sum += (end - start);
-                printf("%lu ", end - start);
-                if (j != 0 && j % 20 == 0) {
-                    printf("\n");
-                }
+            start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
+            end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
+            sum += (end - start);
+            printf("%lu ", end - start);
+            if (j != 0 && j % 20 == 0) {
+                printf("\n");
             }
         }
         means[i] = (double)sum / SIZE_OF_STAT;
