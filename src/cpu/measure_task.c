@@ -111,7 +111,6 @@ int main() {
     }
     sd = sqrt(sum_temp / BOUND_OF_LOOP);
     printf("Overall Mean: %f\nDeviation: %f\n", mean_all, sd);
-    
 
    printf("=========== Measuring Thread Creation ===========\n");
    for (int i = 0; i < BOUND_OF_LOOP; i += 1) {
