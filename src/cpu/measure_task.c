@@ -16,7 +16,6 @@ int main() {
     unsigned int cycles_low0, cycles_high0, cycles_low1, cycles_high1;
     uint64_t start, end;
     double means[BOUND_OF_LOOP];
-    int pid;
     // instruction cache warm up
     __asm__ volatile (
     "cpuid\n\t"
@@ -79,7 +78,7 @@ int main() {
                 : "=r" (cycles_high0), "=r" (cycles_low0)
                 :: "%rax", "%rbx", "%rcx", "%rdx"
                 );
-                pid = fork();
+                int pid = fork();
                 __asm__ volatile(
                 "rdtscp\n\t"
                 "mov %%edx, %0\n\t"
