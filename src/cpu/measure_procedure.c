@@ -41,54 +41,10 @@ void procedure_7(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uin
 int main() {
     unsigned int cycles_low0, cycles_high0, cycles_low1, cycles_high1;
     uint64_t start, end;
-    // instruction cache warm up??
-    __asm__ volatile (
-    "cpuid\n\t"
-    "rdtsc\n\t"
-    "mov %%edx, %0\n\t"
-    "mov %%eax, %1\n\t"
-    : "=r" (cycles_high0), "=r" (cycles_low0)
-    :: "%rax", "%rbx", "%rcx", "%rdx"
-    );
-    __asm__ volatile(
-    "rdtscp\n\t"
-    "mov %%edx, %0\n\t"
-    "mov %%eax, %1\n\t"
-    "cpuid\n\t": "=r" (cycles_high1), "=r" (cycles_low1)
-    :: "%rax", "%rbx", "%rcx", "%rdx"
-    );
-    __asm__ volatile (
-    "cpuid\n\t"
-    "rdtsc\n\t"
-    "mov %%edx, %0\n\t"
-    "mov %%eax, %1\n\t"
-    : "=r" (cycles_high0), "=r" (cycles_low0)
-    :: "%rax", "%rbx", "%rcx", "%rdx"
-    );
-    __asm__ volatile(
-    "rdtscp\n\t"
-    "mov %%edx, %0\n\t"
-    "mov %%eax, %1\n\t"
-    "cpuid\n\t": "=r" (cycles_high1), "=r" (cycles_low1)
-    :: "%rax", "%rbx", "%rcx", "%rdx"
-    );
-    __asm__ volatile (
-    "cpuid\n\t"
-    "rdtsc\n\t"
-    "mov %%edx, %0\n\t"
-    "mov %%eax, %1\n\t"
-    : "=r" (cycles_high0), "=r" (cycles_low0)
-    :: "%rax", "%rbx", "%rcx", "%rdx"
-    );
-    __asm__ volatile(
-    "rdtscp\n\t"
-    "mov %%edx, %0\n\t"
-    "mov %%eax, %1\n\t"
-    "cpuid\n\t": "=r" (cycles_high1), "=r" (cycles_low1)
-    :: "%rax", "%rbx", "%rcx", "%rdx"
-    );
-
     double means[BOUND_OF_LOOP];
+    double mean_all = 0;
+    double sd = 0;
+    double sum_temp = 0;
     for (int i = 0; i < BOUND_OF_LOOP; i += 1) {
         printf("Iter[%d]\n", i);
         uint64_t sum = 0;
@@ -121,9 +77,6 @@ int main() {
         means[i] = (double)sum / SIZE_OF_STAT;
         printf("\nIter[%d] mean: %f\n", i, means[i]);
     }
-    double mean_all = 0;
-    double sd = 0;
-    double sum_temp = 0;
     for (int i = 0; i < BOUND_OF_LOOP; i += 1) {
         mean_all += means[i];
     }
