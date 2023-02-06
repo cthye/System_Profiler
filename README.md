@@ -1,12 +1,19 @@
-# group-9
+# CSE 221 Group 9
 
-Report on [OverLeaf](https://www.overleaf.com/read/trttfkjfsvgq)
+Full Report on [OverLeaf](https://www.overleaf.com/read/trttfkjfsvgq)
 
 # Build
 ```sh
 mkdir bin
-make
+make [cpu/ram/disk/network]
 ```
+
+# Introduction
+Operating System performance is a crucial aspect in today's computing environments. It determines the overall effectiveness and efficiency of a computer system in handling various tasks. The performance of an OS is influenced by various factors including the underlying hardware, system design, and the workload. Understanding how hardware affects the performance of the OS is important in optimizing and tuning the system to meet the specific needs and demands.
+
+In this report, we will focus on exploring the relationship between hardware and OS performance. We will analyze the impact of hardware components such as the CPU, RAM, disk and network on the performance of the OS and how they contribute to the overall system efficiency.
+
+Our group members include Xinyuan Liang, Siran Ma and Wentao Huang. We conducted experiments on an x86_64 and Linux based machine using C and GNU C compiler[version] with -O0[maybe -O1 for some experiments] optimization level. For machine details see the Machine Description section below. The estimated workload is 30 to 40 hours for each team member.
 
 # Machine Description
 1. Processor
@@ -64,3 +71,16 @@ lwconfig wlp2s0 # depends on the interface name
 - Ubuntu 16.04.4 LTS
 7. Notebook Description
 - ASUSTeK X510UQ
+
+### Useful Links
+1. [How to set CPU frequency](https://manpages.ubuntu.com/manpages/impish/man1/cpupower-frequency-set.1.html)
+```sh
+sudo cpupower frequency-info
+sudo cpupower frequency-set -d 3.10GHz
+```
+2. How to run in single core
+- [taskset](https://askubuntu.com/questions/483824/how-to-run-a-program-with-only-one-cpu-core)
+```sh
+taskset -c 0 program
+```
+- [sched_setaffinity](https://man7.org/linux/man-pages/man2/sched_setaffinity.2.html)
