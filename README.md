@@ -71,3 +71,16 @@ lwconfig wlp2s0 # depends on the interface name
 - Ubuntu 16.04.4 LTS
 7. Notebook Description
 - ASUSTeK X510UQ
+
+### Useful Links
+1. [How to set CPU frequency](https://manpages.ubuntu.com/manpages/impish/man1/cpupower-frequency-set.1.html)
+```sh
+sudo cpupower frequency-info
+sudo cpupower frequency-set -d 3.10GHz
+```
+2. How to run in single core
+- [taskset](https://askubuntu.com/questions/483824/how-to-run-a-program-with-only-one-cpu-core)
+```sh
+taskset -c 0 program
+```
+- [sched_setaffinity](https://man7.org/linux/man-pages/man2/sched_setaffinity.2.html)
