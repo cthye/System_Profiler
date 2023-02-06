@@ -13,7 +13,7 @@ Operating System performance is a crucial aspect in today's computing environmen
 
 In this report, we will focus on exploring the relationship between hardware and OS performance. We will analyze the impact of hardware components such as the CPU, RAM, disk and network on the performance of the OS and how they contribute to the overall system efficiency.
 
-Our group members include Xinyuan Liang, Siran Ma and Wentao Huang. We conducted experiments on an x86_64 and Linux based machine. See details in the Machine Description section. And the estimated workload is 30 to 40 hours for each team member.
+Our group members include Xinyuan Liang, Siran Ma and Wentao Huang. We conducted experiments on an x86_64 and Linux based machine using C and GNU C compiler[version] with -O0[maybe -O1 for some experiments] optimization level. For machine details see the Machine Description section below. The estimated workload is 30 to 40 hours for each team member.
 
 # Machine Description
 1. Processor

@@ -1,17 +1,15 @@
 CC ?= gcc 
-CFLAGS = -g -Wall -O0 -std=c99
+CFLAGS = -g -Wall -O0 -std=c99 
+LDLIBS = -lm -lpthread
 EXECUTABLEDIR = ./bin
 UTILSDIR = ./src/utils
 SOURCEDIR_CPU = ./src/cpu
-OBJS_CPU = cycle_counter procedure
+OBJS_CPU = cycle_counter measure_procedure measure_syscall measure_task
 
-cpu: $(OBJS_CPU)
+all: $(OBJS_CPU)
 
-cycle_counter : $(SOURCEDIR_CPU)/cycle_counter.c 
-	$(CC) $(CFLAGS) -o $(EXECUTABLEDIR)/$@ $<
-
-procedure : $(SOURCEDIR_CPU)/measure_procedure.c $(UTILSDIR)/cycle_counter.h
-	$(CC) $(CFLAGS) -o $(EXECUTABLEDIR)/$@ $<
+$(OBJS_CPU): %: $(SOURCEDIR_CPU)/%.c $(UTILSDIR)/*.h
+	$(CC) $(CFLAGS) -o $(EXECUTABLEDIR)/$@ $< $(LDLIBS)
 
 clean:
 	rm -f $(EXECUTABLEDIR)/*

@@ -1,56 +1,27 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <unistd.h>
-#include <math.h>
-#include "../utils/calculation.h"
+#include <sys/times.h>
 #include "../utils/constant.h"
+#include "../utils/calculation.h"
 
-void procedure_0() {
-
-}
-
-void procedure_1(uint64_t arg1) {
-
-}
-
-void procedure_2(uint64_t arg1, uint64_t arg2) {
-
-}
-
-void procedure_3(uint64_t arg1, uint64_t arg2, uint64_t arg3) {
-
-}
-
-void procedure_4(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4) {
-
-}
-
-void procedure_5(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5) {
-
-}
-
-void procedure_6(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5, uint64_t arg6) {
-    
-}
-
-void procedure_7(uint64_t arg1, uint64_t arg2, uint64_t arg3, uint64_t arg4, uint64_t arg5, uint64_t arg6, uint64_t arg7) {
-    
-}
+#define SIZE_OF_STAT 100
+#define BOUND_OF_LOOP 100
 
 int main() {
     unsigned int cycles_low0, cycles_high0, cycles_low1, cycles_high1;
     uint64_t start, end;
-    uint64_t **times;
-    times = malloc((BOUND_OF_LOOP + 1)* sizeof(uint64_t*)); // omit the first batch for warm cache
-    if(!times) {
-        printf("failed to allocate memory to times...\n");
+    uint64_t **rst;
+    rst = malloc((BOUND_OF_LOOP + 1)* sizeof(uint64_t*)); // omit the first batch for warm cache
+    if(!rst) {
+        printf("failed to allocate memory to rst...\n");
         return 0;
     }
     for(int i = 0; i <= BOUND_OF_LOOP; i++) {
-        times[i] = malloc(SIZE_OF_STAT * sizeof(uint64_t));
-        if(!times[i]) {
-            printf("failed to allocate memory to times[%d]...\n", i);
-            for(int k = 0; k < i; k++) free(times[k]);
+        rst[i] = malloc(SIZE_OF_STAT * sizeof(uint64_t));
+        if(!rst[i]) {
+            printf("failed to allocate memory to rst[%d]...\n", i);
+            for(int k = 0; k < i; k++) free(rst[k]);
             return 0;
         }
     }
@@ -66,7 +37,7 @@ int main() {
             : "=r" (cycles_high0), "=r" (cycles_low0)
             :: "%rax", "%rbx", "%rcx", "%rdx"
             );
-            procedure_7(0, 0, 0, 0, 0, 0, 0);
+            times(NULL);
             __asm__ volatile (
             "rdtscp\n\t"
             "mov %%edx, %0\n\t"
@@ -78,9 +49,9 @@ int main() {
             end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
             if((end - start) < 0) {
                 printf("wrong timing: start:%lu, end:%lu ...\n", start, end);
-                times[i][j] = 0;
+                rst[i][j] = 0;
             } else {
-                times[i][j] = end - start;
+                rst[i][j] = end - start;
             }
         }
     }
@@ -88,8 +59,8 @@ int main() {
     uint64_t variance = 0;
     uint64_t variance_of_mean = 0;
     uint64_t max_deviation = 0;
-    char* filename = "../stat/procedure7_rst.txt";
-    do_calculation(times + 1, BOUND_OF_LOOP, SIZE_OF_STAT, &mean, &variance, &variance_of_mean, &max_deviation, filename);
+    char* filename = "../stat/syscall_rst.txt";
+    do_calculation(rst + 1, BOUND_OF_LOOP, SIZE_OF_STAT, &mean, &variance, &variance_of_mean, &max_deviation, filename);
 
     printf("=========== Statistics ===========\n");
     printf("batch size: %d, size of statistic: %d\n", BOUND_OF_LOOP, SIZE_OF_STAT);
