@@ -97,18 +97,30 @@ int main(int argc, char *argv[]) {
     //* =============================
     //* do calculation
     //*==============================
+<<<<<<< HEAD
+    double mean = 0;
+    double variance = 0;
+    double variance_of_mean = 0;
+=======
     uint64_t mean = 0;
     uint64_t variance = 0;
     uint64_t variance_of_mean = 0;
+>>>>>>> main
     uint64_t max_deviation = 0;
     char* filename = "stat/read_time_overhead.txt";
     do_calculation(times + 1, BOUND_OF_LOOP, SIZE_OF_STAT, &mean, &variance, &variance_of_mean, &max_deviation, filename);
 
     printf("================================================\n");
     printf("batch size: %d, size of statistic: %d\n", BOUND_OF_LOOP, SIZE_OF_STAT);
+<<<<<<< HEAD
+    printf("mean:%.2f\n", mean);
+    printf("variance:%.2f\n", variance);
+    printf("variance of mean:%.2f\n", variance_of_mean);
+=======
     printf("mean:%lu\n", mean);
     printf("variance:%lu\n", variance);
     printf("variance of mean:%lu\n", variance_of_mean);
+>>>>>>> main
     printf("maximum deviation:%lu\n", max_deviation);
 
     //*=========================== 
