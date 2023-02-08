@@ -10,12 +10,20 @@
 //* @param mean: mean of the time array
 //* @param size_of_stat: size of inner loop
 //* @return: standard variance of time array
-extern inline uint64_t cal_variance(uint64_t* times, uint64_t mean, uint64_t size) {
-    uint64_t sum = 0;
+extern inline double cal_variance_double(double* times, double mean, uint64_t size) {
+    double sum = 0;
     for(int i = 0; i < size; i++) {
         sum  += (times[i] - mean) * (times[i] - mean);
     }
-    return sqrt(sum / size);
+    return sqrt(sum / (double)size);
+}
+
+extern inline double cal_variance_uint64(uint64_t* times, double mean, uint64_t size) {
+    double sum = 0;
+    for(int i = 0; i < size; i++) {
+        sum  += (times[i] - mean) * (times[i] - mean);
+    }
+    return sqrt(sum / (double)size);
 }
 
 //* do the calculation
@@ -29,19 +37,19 @@ extern inline uint64_t cal_variance(uint64_t* times, uint64_t mean, uint64_t siz
 //* @param max_deviation: return the maximum deviation
 //* @param filename: statistic log filename
 extern inline void do_calculation(uint64_t **times, int bound_of_loop, int size_of_stat, 
-                            uint64_t* mean, uint64_t* variance, 
-                            uint64_t* variance_of_mean, uint64_t* max_deviation, const char* filename) {
+                            double* mean, double* variance, 
+                            double* variance_of_mean, uint64_t* max_deviation, const char* filename) {
                                 uint64_t min_time = INT64_MAX;
                                 uint64_t max_time = 0;
-                                uint64_t sum_mean = 0;
-                                uint64_t sum_variance = 0;
+                                double sum_mean = 0;
+                                double sum_variance = 0;
                                 *mean = 0;
                                 *variance = 0;
                                 *variance_of_mean = 0;
                                 *max_deviation = 0;
 
-                                uint64_t* means = malloc(bound_of_loop * sizeof(uint64_t));
-                                uint64_t* variances = malloc(bound_of_loop * sizeof(uint64_t));
+                                double* means = malloc(bound_of_loop * sizeof(double));
+                                double* variances = malloc(bound_of_loop * sizeof(double));
 
                                 FILE *fd = fopen(filename, "w");
                                 if(!fd) {
@@ -50,7 +58,7 @@ extern inline void do_calculation(uint64_t **times, int bound_of_loop, int size_
                                 }
                                 fprintf(fd, "================================ raw data ===========================\n");
                                 for(int i = 0; i < bound_of_loop; i++) {
-                                    uint64_t sum = 0;
+                                    double sum = 0;
                                     for(int j = 0; j < size_of_stat; j++) {
                                         fprintf(fd, "times %d(batch) : %d -- %lu\n", i, j, times[i][j]);
                                         min_time = min_time < times[i][j] ? min_time : times[i][j];
@@ -64,18 +72,21 @@ extern inline void do_calculation(uint64_t **times, int bound_of_loop, int size_
                                     //     printf("spurious %lu %lu %lu\n", curr_deviation, max_time, min_time);
                                     // }
                                     *max_deviation = (*max_deviation) > curr_deviation ? (*max_deviation) : curr_deviation;
-                                    variances[i] = cal_variance(times[i], means[i], bound_of_loop);
+                                    variances[i] = cal_variance_uint64(times[i], means[i], bound_of_loop);
+                                    // printf("mean%f, variance%f\n", means[i], variances[i]);
+
                                     sum_variance += variances[i];
                                 }
                                 *mean = sum_mean / bound_of_loop;
                                 *variance = sum_variance / bound_of_loop;
-                                *variance_of_mean = cal_variance(means, *mean, bound_of_loop);
+                                // printf("sum mean%f, sum variance%f\n", sum_mean, sum_variance);
+                                *variance_of_mean = cal_variance_double(means, *mean, bound_of_loop);
 
                                 fprintf(fd, "====================================================================\n");
                                 fprintf(fd, "batch size: %d, size of statistic: %d\n", bound_of_loop, size_of_stat);
-                                fprintf(fd, "mean:%lu\n", *mean);
-                                fprintf(fd, "variance:%lu\n", *variance);
-                                fprintf(fd, "variance of mean:%lu\n", *variance_of_mean);
+                                fprintf(fd, "mean:%f\n", *mean);
+                                fprintf(fd, "variance:%f\n", *variance);
+                                fprintf(fd, "variance of mean:%.2f\n", *variance_of_mean);
                                 fprintf(fd, "maximum deviation:%lu\n", *max_deviation);
                                 fclose(fd);
                             }

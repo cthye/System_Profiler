@@ -7,7 +7,11 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include "../utils/calculation.h"
-#include "../utils/constant.h"
+// #include "../utils/constant.h"
+
+const int SIZE_OF_STAT = 100; // #inner loop
+const int BOUND_OF_LOOP = 100; // #outer loop
+
 
 int main(int argc, char *argv[]) {
     printf("start measuring...\n");
@@ -151,18 +155,18 @@ int main(int argc, char *argv[]) {
     //* =============================
     //* do calculation
     //*==============================
-    uint64_t mean = 0;
-    uint64_t variance = 0;
-    uint64_t variance_of_mean = 0;
+    double mean = 0;
+    double variance = 0;
+    double variance_of_mean = 0;
     uint64_t max_deviation = 0;
     char* filename = "stat/pipe_read_write_overhead.txt";
     do_calculation(pipe_times + 1, BOUND_OF_LOOP, SIZE_OF_STAT, &mean, &variance, &variance_of_mean, &max_deviation, filename);
 
     printf("====================== pipe r/w ==================\n");
     printf("batch size: %d, size of statistic: %d\n", BOUND_OF_LOOP, SIZE_OF_STAT);
-    printf("mean:%lu\n", mean);
-    printf("variance:%lu\n", variance);
-    printf("variance of mean:%lu\n", variance_of_mean);
+    printf("mean:%.2f\n", mean);
+    printf("variance:%.2f\n", variance);
+    printf("variance of mean:%.2f\n", variance_of_mean);
     printf("maximum deviation:%lu\n", max_deviation);
 
     filename = "stat/context_switch_process_overhead.txt";
@@ -170,15 +174,10 @@ int main(int argc, char *argv[]) {
 
     printf("====================== context switch ==================\n");
     printf("batch size: %d, size of statistic: %d\n", BOUND_OF_LOOP, SIZE_OF_STAT);
-    printf("mean:%lu\n", mean);
-    printf("variance:%lu\n", variance);
-    printf("variance of mean:%lu\n", variance_of_mean);
+    printf("mean:%.2f\n", mean);
+    printf("variance:%.2f\n", variance);
+    printf("variance of mean:%.2f\n", variance_of_mean);
     printf("maximum deviation:%lu\n", max_deviation);
-
-
-    //*=========================== 
-    //* free memory 
-    //*===========================
     for(int i = 0; i < BOUND_OF_LOOP; i++) {
         free(pipe_times[i]);
     }
