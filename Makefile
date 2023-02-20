@@ -6,7 +6,7 @@ UTILSDIR = ./src/utils
 SOURCEDIR_CPU = ./src/cpu
 SOURCEDIR_MEM = ./src/memory
 OBJS_CPU = cycle_counter read_time_overhead context_switch_process context_switch_thread measure_syscall measure_task measure_procedure
-OBJS_MEM = mearsure_access
+OBJS_MEM = measure_access
 
 all: $(OBJS_CPU) $(OBJS_MEM)
 
