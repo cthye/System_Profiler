@@ -173,11 +173,12 @@ int main(int argc, char *argv[]) {
     printf("variance:%.2f\n", variance);
     printf("variance of mean:%.2f\n", variance_of_mean);
     for(int i = 0; i < BOUND_OF_LOOP; i++) {
-    for(int i = 0; i < BOUND_OF_LOOP; i++) {
-        free(times[i]);
+        for(int i = 0; i < BOUND_OF_LOOP; i++) {
+            free(times[i]);
     }
 
     free(times);
 
     return 0;
+    }
 }
