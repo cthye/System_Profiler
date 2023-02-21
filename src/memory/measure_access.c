@@ -7,13 +7,14 @@
 #define MAXELEMS 2100000
 long data[MAXELEMS]; // all the data
 
-long test(int elements, int stride, double *mean, double *variance, double *variance_of_mean, uint64_t *max_deviation) {
+long test(int elements, int stride, double *mean) {
     // allocate time matrix
     if (stride <= 0 || elements >= MAXELEMS) {
         printf("Inappropriate argumetns...\n");
         return 0;
     }
     uint64_t **times;
+    uint64_t sum = 0;
     times = malloc((BOUND_OF_LOOP + 1)* sizeof(uint64_t*));
     if(!times) {
         printf("failed to allocate memory to times...\n");
@@ -50,8 +51,8 @@ long test(int elements, int stride, double *mean, double *variance, double *vari
                 rst2 += data[begin + stride * 2];
                 rst3 += data[begin + stride * 3];
             }
-            for (; i < length; i++) {
-                rst0 += data[i];
+            for (; begin < length; begin += 1) {
+                rst0 += data[begin];
             }
 
             __asm__ volatile(
@@ -64,18 +65,21 @@ long test(int elements, int stride, double *mean, double *variance, double *vari
             start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
             end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
             if((end - start) < 0) {
-                printf("wrong timing: start:%llu, end:%llu ...\n", start, end);
+                printf("wrong timing: start:%lu, end:%lu ...\n", start, end);
                 times[i][j] = 0;
             } else {
                 times[i][j] = end - start;
             }
         }
     }
-    char *filename = "stat/memory_access.txt";
-    char *data = "stat/memory_access_means.txt";
-    FILE *fd = fopen(data, "w");
-    do_calculation(times + 1, BOUND_OF_LOOP, SIZE_OF_STAT, mean, variance, variance_of_mean, max_deviation, filename);
-    fprintf(fd, "elements: %d, stride: %d, mean: %.2f\n", elements, stride, *mean);
+    //char *filename = "../stat/memory_access.txt";
+    for (int i = 1; i <= BOUND_OF_LOOP; i += 1) {
+        for (int j = 0; j < SIZE_OF_STAT; j += 1) {
+            sum += times[i][j];
+        }
+    }
+    *mean = (double)(sum) / (BOUND_OF_LOOP * SIZE_OF_STAT);
+    //do_calculation(times + 1, BOUND_OF_LOOP, SIZE_OF_STAT, mean, variance, variance_of_mean, max_deviation, filename);
     for(int i = 0; i <= BOUND_OF_LOOP; i++) {
         free(times[i]);
     }
@@ -84,8 +88,22 @@ long test(int elements, int stride, double *mean, double *variance, double *vari
 }
 
 int main() {
-    double mean = 0, variance = 0, variance_of_mean = 0;
-    uint64_t max_deviation = 0;
-    test(2 << 20, 2, &mean, &variance, &variance_of_mean, &max_deviation);
+    double mean = 0;
+    //double variance = 0, variance_of_mean = 0;
+    //uint64_t max_deviation = 0;
+    char *datafile = "../stat/memory_access_means.txt";
+    FILE *fd = fopen(datafile, "w");
+    if (!fd) {
+        printf("open file %s failed", datafile);
+        return 0;
+    }
+    for (int stride = 1; stride <= 16; stride += 1) {
+        for (int arraysize = 8; arraysize <= 10; arraysize += 1) {
+            test(2 << arraysize, stride, &mean);
+            fprintf(fd, "elements: %d * 8 bytes, stride: %d * 8 bytes, mean: %.2f\n", 2 << arraysize, stride, mean);
+        }
+    }
+    fclose(fd);
+    //test(2 << 16, 2, &mean, &variance, &variance_of_mean, &max_deviation);
     return 0;
 }
