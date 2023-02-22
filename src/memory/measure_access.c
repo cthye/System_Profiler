@@ -12,9 +12,10 @@
 #define MAXSTRIDE 32        // Strides range from 1 to 32
 // #define MAXSTRIDE 5        // Strides range from 1 to 32
 #define STRIDESTRIDE 2      // increment stride by this amount each time
-#define MAXELEMS MAXBYTES / sizeof(int) 
+#define MAXELEMS MAXBYTES / sizeof(int)
+#define TYPE long
 
-int data[MAXELEMS];
+TYPE data[MAXELEMS];
 /**
  * @brief return the throughput when accessing the array of size *size* with stride *stride*
  * 
@@ -24,7 +25,7 @@ int data[MAXELEMS];
  * @return the throughput
  */
 double run(int size, int stride, double Mhz) {
-    int elements = size / sizeof(int);
+    int elements = size / sizeof(TYPE);
     uint64_t sum = 0;
     if (elements > MAXELEMS) {
         printf("Inappropriate argumetns...\n");
@@ -33,7 +34,7 @@ double run(int size, int stride, double Mhz) {
     unsigned int cycles_low0, cycles_high0, cycles_low1, cycles_high1;
     uint64_t start, end;
     long rst0, rst1, rst2, rst3;
-    volatile int sink;
+    volatile TYPE sink;
     // warm up the cache
     for (int k = 0; k < elements; k += stride) {
         rst0 += data[k];
@@ -75,14 +76,14 @@ double run(int size, int stride, double Mhz) {
                 sum += cycle;
             }
             // sink = rst0 + rst1 + rst2 + rst3;
-            sink = rst0;
+            sink += rst0;
         }
     }
     double mean = sum / (BOUND_OF_LOOP * SIZE_OF_STAT);
     return (size / stride) / (mean / Mhz);
 }
 
-void init_data(int *data, int n) {
+void init_data(TYPE *data, int n) {
     for (int i = 0; i < n; i += 1) {
 	    data[i] = 1;
     }
@@ -117,9 +118,15 @@ double mhz() {
 }
 
 int main() {
-    char *datafile = "../stat/memory_access_rst.txt";
-    FILE *fd = fopen(datafile, "w");
-    if (!fd) {
+    char *rstfile = "../stat/memory_access_rst.txt";
+    char *datafile = "../stat/memory_access_data.txt";
+    FILE *rstfd = fopen(rstfile, "w");
+    FILE *datafd = fopen(datafile, "w");
+    if (!rstfd) {
+        printf("open file %s failed", rstfile);
+        return 0;
+    }
+    if (!datafd) {
         printf("open file %s failed", datafile);
         return 0;
     }
@@ -127,13 +134,15 @@ int main() {
     double Mhz = mhz();
     double rst;
     for (int stride = 28; stride <= MAXSTRIDE; stride += STRIDESTRIDE) {
-        fprintf(fd, "====== with %d bytes stride ======\n", stride * 4);
+        fprintf(rstfd, "====== with %lu bytes stride ======\n", stride * sizeof(TYPE));
         for (int arraysize = MINBYTES; arraysize <= MAXBYTES; arraysize <<= 1) {
-            printf("====== Measuring %d KB with %d bytes stride ======\n", arraysize / 1024, stride * 4);
+            printf("====== Measuring %d KB with %lu bytes stride ======\n", arraysize / 1024, stride * sizeof(TYPE));
             rst = run(arraysize, stride, Mhz);
-            fprintf(fd, "elements: %d KB, stride: %d bytes, throughput: %.2f M/s\n", arraysize / 1024, stride * 4, rst);
+            fprintf(rstfd, "elements: %d KB, stride: %d bytes, throughput: %.2f M/s\n", arraysize / 1024, stride * 4, rst);
+            fprintf(datafd, "%d %d %.2f\n", arraysize / 1024, stride * 4, rst);
         }
     }
-    fclose(fd);
+    fclose(rstfd);
+    fclose(datafd);
     return 0;
 }
