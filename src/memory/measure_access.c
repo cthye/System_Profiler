@@ -142,6 +142,8 @@ int main() {
             fprintf(datafd, "%d %d %.2f\n", arraysize / 1024, stride * 4, rst);
         }
     }
+    fprintf(rstfd, "\n");
+    fprintf(datafd, "\n");
     fclose(rstfd);
     fclose(datafd);
     return 0;
