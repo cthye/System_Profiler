@@ -1,51 +1,49 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include "../utils/calculation.h"
-// #include "../utils/constant.h"
 
-const int SIZE_OF_STAT = 100; // #inner loop
-const int BOUND_OF_LOOP = 100; // #outer loop
+#define SIZE_OF_STAT 100 // inner loop
+#define BOUND_OF_LOOP 100 // outer loop
+#define MINBYTES (1 << 10)  // Working set size ranges from 1 KB
+// #define MAXBYTES (1 << 25)  // up to 32 MB
+#define MAXBYTES (1 << 23)  // up to 32 MB
+// #define MAXSTRIDE 32        // Strides range from 1 to 32
+#define MAXSTRIDE 5        // Strides range from 1 to 32
+#define STRIDESTRIDE 2      // increment stride by this amount each time
+#define MAXELEMS MAXBYTES / sizeof(int) 
 
-#define MAXELEMS 2100000
-long data[MAXELEMS]; // all the data
-
-long test(int elements, int stride, uint64_t *min) {
-    // allocate time matrix
-    if (stride <= 0 || elements >= MAXELEMS) {
+int data[MAXELEMS];
+/**
+ * @brief return the throughput when accessing the array of size *size* with stride *stride*
+ * 
+ * @param size how big the array is in bytes
+ * @param stride the stride to access the array
+ * @param Mhz the CPU frequency
+ * @param min return the min 
+ * @return the min throughput
+ */
+double run(int size, int stride, double Mhz) {
+    int elements = size / sizeof(int);
+    uint64_t min = INT64_MAX;
+    if (elements > MAXELEMS) {
         printf("Inappropriate argumetns...\n");
         return 0;
     }
-    // uint64_t **times;
-    // uint64_t sum = 0;
-    // times = malloc((BOUND_OF_LOOP + 1)* sizeof(uint64_t*));
-    // if(!times) {
-    //     printf("failed to allocate memory to times...\n");
-    //     return 0;
-    // }
-    // for(int i = 0; i <= BOUND_OF_LOOP; i++) {
-    //     times[i] = malloc(SIZE_OF_STAT * sizeof(uint64_t));
-    //     if(!times[i]) {
-    //         printf("failed to allocate memory to times[%d]...\n", i);
-    //         for(int k = 0; k < i; k++) free(times[k]);
-    //         return 0;
-    //     }
-    // }
     unsigned int cycles_low0, cycles_high0, cycles_low1, cycles_high1;
     uint64_t start, end;
-    long begin;
     long rst0, rst1, rst2, rst3;
-    long length = elements;
-    *min = INT64_MAX;
-
-    for (int i = 0; i <= BOUND_OF_LOOP; i += 1) {
+    volatile int sink;
+    // warm up the cache
+    for (int k = 0; k < elements; k += (4 * stride)) {
+        rst0 += data[k];
+        rst1 += data[k + stride];
+        rst2 += data[k + stride * 2];
+        rst3 += data[k + stride * 3];
+    }
+    for (int i = 0; i < BOUND_OF_LOOP; i += 1) {
         for (int j = 0; j < SIZE_OF_STAT; j += 1) {
-            for (begin = 0; begin < length; begin += (4 * stride)) {
-                rst0 += data[begin];
-                rst1 += data[begin + stride];
-                rst2 += data[begin + stride * 2];
-                rst3 += data[begin + stride * 3];
-            }
             __asm__ volatile (
             "cpuid\n\t"
             "rdtsc\n\t"
@@ -55,12 +53,13 @@ long test(int elements, int stride, uint64_t *min) {
             :: "%rax", "%rbx", "%rcx", "%rdx"
             );
 
-            for (begin = 0; begin < length; begin += (4 * stride)) {
-                rst0 += data[begin];
-                rst1 += data[begin + stride];
-                rst2 += data[begin + stride * 2];
-                rst3 += data[begin + stride * 3];
+            for (int k = 0; k < elements; k += (4 * stride)) {
+                rst0 += data[k];
+                rst1 += data[k + stride];
+                rst2 += data[k + stride * 2];
+                rst3 += data[k + stride * 3];
             }
+
             __asm__ volatile(
             "rdtscp\n\t"
             "mov %%edx, %0\n\t"
@@ -70,50 +69,67 @@ long test(int elements, int stride, uint64_t *min) {
             );
             start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
             end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
-            if((end - start) < 0) {
-                printf("invalid data when calculating memory access time, start - end:%lu\n", end - start);
-            } else if (end - start < *min) {
-                *min = end - start;
+            uint64_t cycle = end - start;
+            if(cycle < 0) {
+                printf("invalid data when calculating memory access time, start - end:%lu\n", cycle);
+            } else if (cycle < min) {
+                min = cycle;
             }
+            sink = rst0 + rst1 + rst2 + rst3;
         }
     }
-    //char *filename = "../stat/memory_access.txt";
-    // for (int i = 1; i <= BOUND_OF_LOOP; i += 1) {
-    //     for (int j = 0; j < SIZE_OF_STAT; j += 1) {
-    //         sum += times[i][j];
-    //     }
-    // }
-    //*mean = (double)(sum) / (BOUND_OF_LOOP * SIZE_OF_STAT);
-    //do_calculation(times + 1, BOUND_OF_LOOP, SIZE_OF_STAT, mean, variance, variance_of_mean, max_deviation, filename);
-    // for(int i = 0; i <= BOUND_OF_LOOP; i++) {
-    //     free(times[i]);
-    // }
-    // free(times);
-    return rst0 + rst1 + rst2 + rst3;
+    return (size / stride) / (min / Mhz);
 }
 
-double getThroughput(int elements, int stride, uint64_t min) {
-    return (8.0 * elements / stride) * 3100 / min; // M/s
+void init_data(int *data, int n) {
+    for (int i = 0; i < n; i += 1) {
+	    data[i] = 1;
+    }
+}
+
+double mhz() {
+    double rate;
+    unsigned int cycles_low0, cycles_high0, cycles_low1, cycles_high1;
+    uint64_t start, end;
+    __asm__ volatile (
+            "cpuid\n\t"
+            "rdtsc\n\t"
+            "mov %%edx, %0\n\t"
+            "mov %%eax, %1\n\t"
+            : "=r" (cycles_high0), "=r" (cycles_low0)
+            :: "%rax", "%rbx", "%rcx", "%rdx"
+            );
+    sleep(2);
+    __asm__ volatile(
+            "rdtscp\n\t"
+            "mov %%edx, %0\n\t"
+            "mov %%eax, %1\n\t"
+            "cpuid\n\t": "=r" (cycles_high1), "=r" (cycles_low1)
+            :: "%rax", "%rbx", "%rcx", "%rdx"
+            );
+    start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
+    end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
+    rate = (start - end) / (1e6 * 2);
+    printf("Running on a %.2f Mhz CPU\n", rate);
+    return rate;
 }
 
 int main() {
-    //double mean = 0;
-    //double variance = 0, variance_of_mean = 0;
-    //uint64_t max_deviation = 0;
-    uint64_t min = 0;
     char *datafile = "../stat/memory_access_rst.txt";
     FILE *fd = fopen(datafile, "w");
     if (!fd) {
         printf("open file %s failed", datafile);
         return 0;
     }
-    for (int stride = 1; stride <= 2; stride += 1) {
-        fprintf(fd, "====== with %d bytes stride ======\n", stride * 8);
-        for (int arraysize = 8; arraysize <= 21; arraysize += 1) {
-            int elements = 1 << arraysize;
-            printf("====== Measuring %.2f KB elements with %d bytes stride ======\n", elements * 8 / 1024.0, stride * 8);
-            test(elements, stride, &min);
-            fprintf(fd, "elements: %.2f KB, stride: %d bytes, throughput: %.2f M/s\n", elements * 8 / 1024.0, stride * 8, getThroughput(elements, stride, min));
+    init_data(data, MAXELEMS);
+    double Mhz = mhz();
+    double rst;
+    for (int stride = 1; stride <= MAXSTRIDE; stride += STRIDESTRIDE) {
+        fprintf(fd, "====== with %d bytes stride ======\n", stride * 4);
+        for (int arraysize = MINBYTES; arraysize <= MAXBYTES; arraysize <<= 1) {
+            printf("====== Measuring %.2f KB bytes with %d bytes stride ======\n", arraysize / 1024.0, stride * 4);
+            rst = run(arraysize, stride, Mhz);
+            fprintf(fd, "elements: %.2f KB, stride: %d bytes, throughput: %.2f M/s\n", arraysize / 1024.0, stride * 4, rst);
         }
     }
     fclose(fd);
