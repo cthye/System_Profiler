@@ -2,18 +2,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include "../utils/calculation.h"
 
 #define SIZE_OF_STAT 100 // inner loop
-#define BOUND_OF_LOOP 100 // outer loop
+#define BOUND_OF_LOOP 10 // outer loop
 #define MINBYTES (1 << 10)  // Working set size ranges from 1 KB
-#define MAXBYTES (1 << 25)  // up to 32 MB
+#define MAXBYTES (1 << 26)  // up to 64 MB
 //#define MAXBYTES (1 << 23)  // up to 8 MB
-#define MAXSTRIDE 32        // Strides range from 1 to 32
-// #define MAXSTRIDE 5        // Strides range from 1 to 32
+#define MAXSTRIDE 48        // Strides range from 1 to 48
+// #define MAXSTRIDE 5      
 #define STRIDESTRIDE 2      // increment stride by this amount each time
-#define MAXELEMS MAXBYTES / sizeof(int)
-#define TYPE long
+#define TYPE double
+#define MAXELEMS MAXBYTES / sizeof(TYPE)
 
 TYPE data[MAXELEMS];
 /**
@@ -33,7 +32,7 @@ double run(int size, int stride, double Mhz) {
     }
     unsigned int cycles_low0, cycles_high0, cycles_low1, cycles_high1;
     uint64_t start, end;
-    long rst0, rst1, rst2, rst3;
+    TYPE rst0, rst1, rst2, rst3;
     volatile TYPE sink;
     // warm up the cache
     for (int k = 0; k < elements; k += stride) {
@@ -76,7 +75,8 @@ double run(int size, int stride, double Mhz) {
                 sum += cycle;
             }
             // sink = rst0 + rst1 + rst2 + rst3;
-            sink += rst0;
+            // sink += rst0;
+            data[0] = rst0;
         }
     }
     double mean = sum / (BOUND_OF_LOOP * SIZE_OF_STAT);
@@ -133,13 +133,13 @@ int main() {
     init_data(data, MAXELEMS);
     double Mhz = mhz();
     double rst;
-    for (int stride = 28; stride <= MAXSTRIDE; stride += STRIDESTRIDE) {
+    for (int stride = 1; stride <= MAXSTRIDE; stride += STRIDESTRIDE) {
         fprintf(rstfd, "====== with %lu bytes stride ======\n", stride * sizeof(TYPE));
         for (int arraysize = MINBYTES; arraysize <= MAXBYTES; arraysize <<= 1) {
             printf("====== Measuring %d KB with %lu bytes stride ======\n", arraysize / 1024, stride * sizeof(TYPE));
             rst = run(arraysize, stride, Mhz);
-            fprintf(rstfd, "elements: %d KB, stride: %d bytes, throughput: %.2f M/s\n", arraysize / 1024, stride * 4, rst);
-            fprintf(datafd, "%d %d %.2f\n", arraysize / 1024, stride * 4, rst);
+            fprintf(rstfd, "elements: %d KB, stride: %lu bytes, throughput: %.2f M/s\n", arraysize / 1024, stride * sizeof(TYPE), rst);
+            fprintf(datafd, "%d %d %.2f\n", stride, arraysize, rst);
         }
     }
     fprintf(rstfd, "\n");
