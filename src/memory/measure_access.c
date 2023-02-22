@@ -7,10 +7,10 @@
 #define SIZE_OF_STAT 100 // inner loop
 #define BOUND_OF_LOOP 100 // outer loop
 #define MINBYTES (1 << 10)  // Working set size ranges from 1 KB
-// #define MAXBYTES (1 << 25)  // up to 32 MB
-#define MAXBYTES (1 << 23)  // up to 32 MB
-// #define MAXSTRIDE 32        // Strides range from 1 to 32
-#define MAXSTRIDE 5        // Strides range from 1 to 32
+#define MAXBYTES (1 << 25)  // up to 32 MB
+//#define MAXBYTES (1 << 23)  // up to 8 MB
+#define MAXSTRIDE 32        // Strides range from 1 to 32
+// #define MAXSTRIDE 5        // Strides range from 1 to 32
 #define STRIDESTRIDE 2      // increment stride by this amount each time
 #define MAXELEMS MAXBYTES / sizeof(int) 
 
@@ -21,12 +21,11 @@ int data[MAXELEMS];
  * @param size how big the array is in bytes
  * @param stride the stride to access the array
  * @param Mhz the CPU frequency
- * @param min return the min 
- * @return the min throughput
+ * @return the throughput
  */
 double run(int size, int stride, double Mhz) {
     int elements = size / sizeof(int);
-    uint64_t min = INT64_MAX;
+    uint64_t sum = 0;
     if (elements > MAXELEMS) {
         printf("Inappropriate argumetns...\n");
         return 0;
@@ -36,11 +35,11 @@ double run(int size, int stride, double Mhz) {
     long rst0, rst1, rst2, rst3;
     volatile int sink;
     // warm up the cache
-    for (int k = 0; k < elements; k += (4 * stride)) {
+    for (int k = 0; k < elements; k += stride) {
         rst0 += data[k];
-        rst1 += data[k + stride];
-        rst2 += data[k + stride * 2];
-        rst3 += data[k + stride * 3];
+        // rst1 += data[k + stride];
+        // rst2 += data[k + stride * 2];
+        // rst3 += data[k + stride * 3];
     }
     for (int i = 0; i < BOUND_OF_LOOP; i += 1) {
         for (int j = 0; j < SIZE_OF_STAT; j += 1) {
@@ -53,11 +52,11 @@ double run(int size, int stride, double Mhz) {
             :: "%rax", "%rbx", "%rcx", "%rdx"
             );
 
-            for (int k = 0; k < elements; k += (4 * stride)) {
+            for (int k = 0; k < elements; k += stride) {
                 rst0 += data[k];
-                rst1 += data[k + stride];
-                rst2 += data[k + stride * 2];
-                rst3 += data[k + stride * 3];
+                // rst1 += data[k + stride];
+                // rst2 += data[k + stride * 2];
+                // rst3 += data[k + stride * 3];
             }
 
             __asm__ volatile(
@@ -70,15 +69,17 @@ double run(int size, int stride, double Mhz) {
             start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
             end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
             uint64_t cycle = end - start;
-            if(cycle < 0) {
+            if(cycle <= 0) {
                 printf("invalid data when calculating memory access time, start - end:%lu\n", cycle);
-            } else if (cycle < min) {
-                min = cycle;
+            } else {
+                sum += cycle;
             }
-            sink = rst0 + rst1 + rst2 + rst3;
+            // sink = rst0 + rst1 + rst2 + rst3;
+            sink = rst0;
         }
     }
-    return (size / stride) / (min / Mhz);
+    double mean = sum / (BOUND_OF_LOOP * SIZE_OF_STAT);
+    return (size / stride) / (mean / Mhz);
 }
 
 void init_data(int *data, int n) {
@@ -88,6 +89,7 @@ void init_data(int *data, int n) {
 }
 
 double mhz() {
+    printf("====== Measuring CPU frequency ======\n");
     double rate;
     unsigned int cycles_low0, cycles_high0, cycles_low1, cycles_high1;
     uint64_t start, end;
@@ -109,7 +111,7 @@ double mhz() {
             );
     start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
     end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
-    rate = (start - end) / (1e6 * 2);
+    rate = (end - start) / (1e6 * 2);
     printf("Running on a %.2f Mhz CPU\n", rate);
     return rate;
 }
@@ -124,12 +126,12 @@ int main() {
     init_data(data, MAXELEMS);
     double Mhz = mhz();
     double rst;
-    for (int stride = 1; stride <= MAXSTRIDE; stride += STRIDESTRIDE) {
+    for (int stride = 28; stride <= MAXSTRIDE; stride += STRIDESTRIDE) {
         fprintf(fd, "====== with %d bytes stride ======\n", stride * 4);
         for (int arraysize = MINBYTES; arraysize <= MAXBYTES; arraysize <<= 1) {
-            printf("====== Measuring %.2f KB bytes with %d bytes stride ======\n", arraysize / 1024.0, stride * 4);
+            printf("====== Measuring %d KB with %d bytes stride ======\n", arraysize / 1024, stride * 4);
             rst = run(arraysize, stride, Mhz);
-            fprintf(fd, "elements: %.2f KB, stride: %d bytes, throughput: %.2f M/s\n", arraysize / 1024.0, stride * 4, rst);
+            fprintf(fd, "elements: %d KB, stride: %d bytes, throughput: %.2f M/s\n", arraysize / 1024, stride * 4, rst);
         }
     }
     fclose(fd);
