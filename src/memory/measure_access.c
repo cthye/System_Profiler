@@ -2,7 +2,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../utils/calculation.h"
-#include "../utils/constant.h"
+// #include "../utils/constant.h"
+
+const int SIZE_OF_STAT = 100; // #inner loop
+const int BOUND_OF_LOOP = 100; // #outer loop
 
 #define MAXELEMS 2100000
 long data[MAXELEMS]; // all the data
@@ -29,44 +32,43 @@ long test(int elements, int stride, double *mean) {
         }
     }
     unsigned int cycles_low0, cycles_high0, cycles_low1, cycles_high1;
-    uint64_t start, end, loop_overhead;
+    uint64_t start, end;
     long begin;
     long rst0, rst1, rst2, rst3;
     long length = elements, limit = length - stride * 4;
 
     for (int i = 0; i <= BOUND_OF_LOOP; i += 1) {
         for (int j = 0; j < SIZE_OF_STAT; j += 1) {
-            __asm__ volatile (
-            "cpuid\n\t"
-            "rdtsc\n\t"
-            "mov %%edx, %0\n\t"
-            "mov %%eax, %1\n\t"
-            : "=r" (cycles_high0), "=r" (cycles_low0)
-            :: "%rax", "%rbx", "%rcx", "%rdx"
-            );
+            // __asm__ volatile (
+            // "cpuid\n\t"
+            // "rdtsc\n\t"
+            // "mov %%edx, %0\n\t"
+            // "mov %%eax, %1\n\t"
+            // : "=r" (cycles_high0), "=r" (cycles_low0)
+            // :: "%rax", "%rbx", "%rcx", "%rdx"
+            // );
 
-            for (begin = 0; begin < limit; begin += (4 * stride)) {
-                rst0 += data[0];
-                rst1 += data[0];
-                rst2 += data[0];
-                rst3 += data[0];
-            }
-            __asm__ volatile(
-            "rdtscp\n\t"
-            "mov %%edx, %0\n\t"
-            "mov %%eax, %1\n\t"
-            "cpuid\n\t": "=r" (cycles_high1), "=r" (cycles_low1)
-            :: "%rax", "%rbx", "%rcx", "%rdx"
-            );
-            start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
-            end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
-            if((end - start) < 0) {
-                printf("wrong timing when calculating the loop overhead: start:%lu, end:%lu ...\n", start, end);
-                loop_overhead = 0;
-            } else {
-                loop_overhead = end - start;
-            }
-
+            // for (begin = 0; begin < limit; begin += (4 * stride)) {
+            //     rst0 += data[0];
+            //     rst1 += data[0];
+            //     rst2 += data[0];
+            //     rst3 += data[0];
+            // }
+            // __asm__ volatile(
+            // "rdtscp\n\t"
+            // "mov %%edx, %0\n\t"
+            // "mov %%eax, %1\n\t"
+            // "cpuid\n\t": "=r" (cycles_high1), "=r" (cycles_low1)
+            // :: "%rax", "%rbx", "%rcx", "%rdx"
+            // );
+            // start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
+            // end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
+            // if((end - start) < 0) {
+            //     printf("invalid data when calculating the loop overhead: start:%lu, end:%lu ...\n", start, end);
+            //     loop_overhead = 0;
+            // } else {
+            //     loop_overhead = end - start;
+            // }
             __asm__ volatile (
             "cpuid\n\t"
             "rdtsc\n\t"
@@ -94,11 +96,11 @@ long test(int elements, int stride, double *mean) {
             );
             start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
             end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
-            if((end - start) < loop_overhead) {
-                printf("wrong timing: start:%lu, end:%lu ...\n", start, end);
+            if((end - start) < 0) {
+                printf("invalid data when calculating memory access time, start - end:%lu\n", end - start);
                 times[i][j] = 0;
             } else {
-                times[i][j] = end - start - loop_overhead;
+                times[i][j] = end - start;
             }
         }
     }
@@ -118,7 +120,7 @@ long test(int elements, int stride, double *mean) {
 }
 
 double getThroughput(int elements, int stride, double mean) {
-    return (8.0 * elements / stride) * 3100 / mean; // M/s
+    return (8 * elements / stride) * 3100 / mean; // M/s
 }
 
 int main() {
@@ -131,12 +133,13 @@ int main() {
         printf("open file %s failed", datafile);
         return 0;
     }
-    for (int stride = 1; stride <= 16; stride += 1) {
-        for (int arraysize = 8; arraysize <= 10; arraysize += 1) {
-            int elements = 2 << arraysize;
-            printf("====== Measuring %d elements with %d stride ======\n", elements * 8, stride * 8);
+    for (int stride = 1; stride <= 2; stride += 1) {
+        fprintf(fd, "====== with %d bytes stride ======\n", stride * 8);
+        for (int arraysize = 8; arraysize <= 21; arraysize += 1) {
+            int elements = 1 << arraysize;
+            printf("====== Measuring %.2f KB elements with %d bytes stride ======\n", elements * 8 / 1024.0, stride * 8);
             test(elements, stride, &mean);
-            fprintf(fd, "elements: %d bytes, stride: %d bytes, throughput: %.2f M/s\n", elements * 8, stride * 8, getThroughput(elements, stride, mean));
+            fprintf(fd, "elements: %.2f KB, stride: %d bytes, throughput: %.2f M/s\n", elements * 8 / 1024.0, stride * 8, getThroughput(elements, stride, mean));
         }
     }
     fclose(fd);
