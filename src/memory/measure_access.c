@@ -35,12 +35,12 @@ long test(int elements, int stride, uint64_t *min) {
     uint64_t start, end;
     long begin;
     long rst0, rst1, rst2, rst3;
-    long length = elements, limit = length - stride * 4;
+    long length = elements;
     *min = INT64_MAX;
 
     for (int i = 0; i <= BOUND_OF_LOOP; i += 1) {
         for (int j = 0; j < SIZE_OF_STAT; j += 1) {
-            for (begin = 0; begin < limit; begin += (4 * stride)) {
+            for (begin = 0; begin < length; begin += (4 * stride)) {
                 rst0 += data[begin];
                 rst1 += data[begin + stride];
                 rst2 += data[begin + stride * 2];
@@ -55,7 +55,7 @@ long test(int elements, int stride, uint64_t *min) {
             :: "%rax", "%rbx", "%rcx", "%rdx"
             );
 
-            for (begin = 0; begin < limit; begin += (4 * stride)) {
+            for (begin = 0; begin < length; begin += (4 * stride)) {
                 rst0 += data[begin];
                 rst1 += data[begin + stride];
                 rst2 += data[begin + stride * 2];
@@ -92,8 +92,8 @@ long test(int elements, int stride, uint64_t *min) {
     return rst0 + rst1 + rst2 + rst3;
 }
 
-double getThroughput(int elements, int stride, double mean) {
-    return (8 * elements / stride) * 3100 / mean; // M/s
+double getThroughput(int elements, int stride, uint64_t min) {
+    return (8.0 * elements / stride) * 3100 / min; // M/s
 }
 
 int main() {
@@ -113,7 +113,7 @@ int main() {
             int elements = 1 << arraysize;
             printf("====== Measuring %.2f KB elements with %d bytes stride ======\n", elements * 8 / 1024.0, stride * 8);
             test(elements, stride, &min);
-            fprintf(fd, "elements: %.2f KB, stride: %d bytes, throughput: %.2f M/s\n", elements * 8 / 1024.0, stride * 8, getThroughput(elements, stride, mean));
+            fprintf(fd, "elements: %.2f KB, stride: %d bytes, throughput: %.2f M/s\n", elements * 8 / 1024.0, stride * 8, getThroughput(elements, stride, min));
         }
     }
     fclose(fd);
