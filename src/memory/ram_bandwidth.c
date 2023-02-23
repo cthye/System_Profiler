@@ -12,20 +12,12 @@
 char foo[CACHE_SIZE], bar[CACHE_SIZE];
 #define OBLIT_CACHE memcpy(foo, bar, CACHE_SIZE)
 
-uint64_t benchmark(int* beg, int* end) {
-    uint64_t **times;
+uint64_t benchmark_read(int* beg, int* end) {
+    uint64_t *times;
     times = malloc((BOUND_OF_LOOP + 1)* sizeof(uint64_t*));
     if(!times) {
         printf("failed to allocate memory to times...\n");
         return 0;
-    }
-    for(int i = 0; i <= BOUND_OF_LOOP; i++) {
-        times[i] = malloc(SIZE_OF_STAT * sizeof(uint64_t));
-        if(!times[i]) {
-            printf("failed to allocate memory to times[%d]...\n", i);
-            for(int k = 0; k < i; k++) free(times[k]);
-            return 0;
-        }
     }
 
     uint64_t start_time, end_time;
@@ -33,7 +25,7 @@ uint64_t benchmark(int* beg, int* end) {
     uint64_t sum = 0;
     uint64_t sum_times = 0;
 
-    for (int i=0; i < BOUND_OF_LOOP; i=i+1) {
+    for (int i=0; i <= BOUND_OF_LOOP; i=i+1) {
         int *p = beg;
         OBLIT_CACHE;
 
@@ -66,30 +58,25 @@ p += 1024;
             printf("wrong timing: start:%lu, end:%lu ...\n", start_time, end_time);
             times[i] = 0;
         } else {
+	    printf("------------time:%lu\n",end_time-start_time);
             times[i] = end_time - start_time;
-            sum_times = sum_times + times[i];
         }
     }
-
-    return sum / BOUND_OF_LOOP; // - READING_TIME_OVERHEAD;
+    for(int i=0;i<=BOUND_OF_LOOP;i++){
+        sum_times=sum_times+times[i];
+    }
+    printf("read sum_times: %lld\n",sum_times);
+    return (uint64_t)(sum_times / (BOUND_OF_LOOP+1)); // - READING_TIME_OVERHEAD;
 }
 #undef OP
 
 uint64_t benchmark_write(int* beg, int* end) {
 
-    uint64_t **times;
+    uint64_t *times;
     times = malloc((BOUND_OF_LOOP + 1)* sizeof(uint64_t*));
     if(!times) {
         printf("failed to allocate memory to times...\n");
         return 0;
-    }
-    for(int i = 0; i <= BOUND_OF_LOOP; i++) {
-        times[i] = malloc(SIZE_OF_STAT * sizeof(uint64_t));
-        if(!times[i]) {
-            printf("failed to allocate memory to times[%d]...\n", i);
-            for(int k = 0; k < i; k++) free(times[k]);
-            return 0;
-        }
     }
 
     uint64_t start_time, end_time;
@@ -130,12 +117,15 @@ p += 1024;
             printf("wrong timing: start:%lu, end:%lu ...\n", start_time, end_time);
             times[i] = 0;
         } else {
+            printf("------------time:%lu\n",end_time-start_time);
             times[i] = end_time - start_time;
-            sum_times = sum_times + times[i];
         }
     }
-
-    return sum / BOUND_OF_LOOP; // - READING_TIME_OVERHEAD;
+    for(int i=0;i<=BOUND_OF_LOOP;i++){
+        sum_times=sum_times+times[i];
+    }
+    printf("write sum_times: %ld\n",sum_times);
+    return (uint64_t)(sum_times / (BOUND_OF_LOOP+1)); // - READING_TIME_OVERHEAD;
 }
 #undef OP
 
@@ -148,7 +138,7 @@ int main() {
 
 // bandwidth: GB/s = GB * cycles/s * 1/cycles
 #define t2b(t) (N_BYTES*1.0 / (1<<30) * 8e8 / (t))
-
+    printf("Raw read/write time: %lld, %lld\n",tr,tw);
     printf("Read bandwidth: %.5f (GB/s); Write bandwidth: %.5f (GB/s)\n", t2b(tr), t2b(tw));
 
 #undef t2b
