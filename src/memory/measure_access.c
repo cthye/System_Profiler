@@ -11,7 +11,7 @@
 #define MAXSTRIDE 48        // Strides range from 1 to 48
 // #define MAXSTRIDE 5      
 #define STRIDESTRIDE 2      // increment stride by this amount each time
-#define TYPE double
+#define TYPE uint64_t
 #define MAXELEMS MAXBYTES / sizeof(TYPE)
 
 TYPE data[MAXELEMS];

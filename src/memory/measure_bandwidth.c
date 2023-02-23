@@ -7,13 +7,14 @@
 
 #define BOUND_OF_LOOP 100
 #define N_BYTES (1 << 22) // 4MB
-#define N_INTS (N_BYTES >> 2)
+#define TYPE uint64_t
+#define N_ELMENTS (N_BYTES >> 3)
 #define CACHE_SIZE (1 << 22) // 4MB
 
 char foo[CACHE_SIZE], bar[CACHE_SIZE];
 #define OBLIT_CACHE memcpy(foo, bar, CACHE_SIZE)
 
-uint64_t benchmark_read(int* beg, int* end) {
+uint64_t benchmark_read(TYPE* beg, TYPE* end) {
     uint64_t *times;
     times = malloc((BOUND_OF_LOOP + 1)* sizeof(uint64_t*));
     if(!times) {
@@ -26,8 +27,8 @@ uint64_t benchmark_read(int* beg, int* end) {
     uint64_t sum = 0;
     uint64_t sum_times = 0;
 
-    for (int i=0; i <= BOUND_OF_LOOP; i=i+1) {
-        int *p = beg;
+    for (int i = 0; i <= BOUND_OF_LOOP; i = i + 1) {
+        TYPE *p = beg;
         OBLIT_CACHE;
 
         __asm__ volatile (
@@ -63,7 +64,7 @@ p += 1024;
             times[i] = end_time - start_time;
         }
     }
-    for(int i=0;i<=BOUND_OF_LOOP;i++){
+    for(int i = 0; i <= BOUND_OF_LOOP; i += 1){
         sum_times=sum_times+times[i];
     }
     // printf("read sum_times: %lld\n",sum_times);
@@ -71,7 +72,7 @@ p += 1024;
 }
 #undef OP
 
-uint64_t benchmark_write(int* beg, int* end) {
+uint64_t benchmark_write(TYPE* beg, TYPE* end) {
 
     uint64_t *times;
     times = malloc((BOUND_OF_LOOP + 1)* sizeof(uint64_t*));
@@ -85,7 +86,7 @@ uint64_t benchmark_write(int* beg, int* end) {
     uint64_t sum_times = 0;
 
     for (int i=0; i < BOUND_OF_LOOP; ++i) {
-        int *p = beg;
+        TYPE *p = beg;
         OBLIT_CACHE;
 
         __asm__ volatile (
@@ -121,7 +122,7 @@ p += 1024;
             times[i] = end_time - start_time;
         }
     }
-    for(int i=0;i<=BOUND_OF_LOOP;i++){
+    for(int i = 0;i <= BOUND_OF_LOOP; i += 1){
         sum_times=sum_times+times[i];
     }
     //printf("write sum_times: %ld\n",sum_times);
@@ -159,15 +160,14 @@ double mhz() {
 
 int main() {
     uint64_t tw, tr;
-    int arr[N_INTS];
+    TYPE arr[N_ELMENTS];
     double Mhz = mhz();
 
-    tr = benchmark_read(arr, arr + N_INTS);
-    tw = benchmark_write(arr, arr + N_INTS);
+    tr = benchmark_read(arr, arr + N_ELMENTS);
+    tw = benchmark_write(arr, arr + N_ELMENTS);
 
-    // bandwidth: GB/s = GB * cycles/s * 1/cycles
-    #define t2b(t) ((N_BYTES/8.0) / (t / Mhz))
-    printf("Raw read/write time: %ld, %ld\n",tr,tw);
+    #define t2b(t) ((N_BYTES / 8.0) / (t / Mhz))
+    printf("Raw read/write time: %ld, %ld\n",tr, tw);
     printf("Read bandwidth: %.5f (MB/s); Write bandwidth: %.5f (MB/s)\n", t2b(tr), t2b(tw));
 
     #undef t2b
