@@ -13,7 +13,6 @@ char foo[CACHE_SIZE], bar[CACHE_SIZE];
 #define OBLIT_CACHE memcpy(foo, bar, CACHE_SIZE)
 
 uint64_t benchmark(int* beg, int* end) {
-
     uint64_t **times;
     times = malloc((BOUND_OF_LOOP + 1)* sizeof(uint64_t*));
     if(!times) {
@@ -34,7 +33,7 @@ uint64_t benchmark(int* beg, int* end) {
     uint64_t sum = 0;
     uint64_t sum_times = 0;
 
-    for (int i=0; i < BOUND_OF_LOOP; ++i) {
+    for (int i=0; i < BOUND_OF_LOOP; i=i+1) {
         int *p = beg;
         OBLIT_CACHE;
 
@@ -126,7 +125,7 @@ p += 1024;
         );
         
         start_time = (((uint64_t)cycles_high0 << 32) | cycles_low0);
-        end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
+        end_time = (((uint64_t)cycles_high1 << 32) | cycles_low1);
         if((end_time - start_time) < 0) {
             printf("wrong timing: start:%lu, end:%lu ...\n", start_time, end_time);
             times[i] = 0;
