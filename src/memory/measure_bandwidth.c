@@ -6,9 +6,9 @@
 #include "../utils/constant.h"
 
 #define BOUND_OF_LOOP 100
-#define N_BYTES (1<<22) // 4MB
+#define N_BYTES (1 << 22) // 4MB
 #define N_INTS (N_BYTES >> 2)
-#define CACHE_SIZE (1<<22) // 4MB
+#define CACHE_SIZE (1 << 22) // 4MB
 
 char foo[CACHE_SIZE], bar[CACHE_SIZE];
 #define OBLIT_CACHE memcpy(foo, bar, CACHE_SIZE)
@@ -157,7 +157,6 @@ double mhz() {
     return rate;
 }
 
-
 int main() {
     uint64_t tw, tr;
     int arr[N_INTS];
@@ -171,5 +170,5 @@ int main() {
     printf("Raw read/write time: %ld, %ld\n",tr,tw);
     printf("Read bandwidth: %.5f (MB/s); Write bandwidth: %.5f (MB/s)\n", t2b(tr), t2b(tw));
 
-#undef t2b
+    #undef t2b
 }
