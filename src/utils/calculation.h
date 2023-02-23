@@ -91,4 +91,39 @@ extern inline void do_calculation(uint64_t **times, int bound_of_loop, int size_
                                 fclose(fd);
                             }
 
+
+//* return the MB/s
+//*
+//* @param size: array size (the size of total r/w array)
+//* @param stride: the stride between each r/w
+//* @param cycles: clock cycles elapsed
+//* @return: MB/s
+extern double get_throughput(long size, int stride, double cycles) {
+    double freq;
+    unsigned int cycles_low0, cycles_high0, cycles_low1, cycles_high1;
+    uint64_t start, end;
+    __asm__ volatile (
+            "cpuid\n\t"
+            "rdtsc\n\t"
+            "mov %%edx, %0\n\t"
+            "mov %%eax, %1\n\t"
+            : "=r" (cycles_high0), "=r" (cycles_low0)
+            :: "%rax", "%rbx", "%rcx", "%rdx"
+            );
+    sleep(2);
+    __asm__ volatile(
+            "rdtscp\n\t"
+            "mov %%edx, %0\n\t"
+            "mov %%eax, %1\n\t"
+            "cpuid\n\t": "=r" (cycles_high1), "=r" (cycles_low1)
+            :: "%rax", "%rbx", "%rcx", "%rdx"
+            );
+    start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
+    end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
+    freq = (end - start) / (1e6 * 2);
+    printf("Running on a %.2f Mhz CPU\n", freq);
+
+    return (size / stride) / (cycles / freq);
+}
+
 #endif
