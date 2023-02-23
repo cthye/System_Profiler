@@ -29,7 +29,7 @@ uint64_t benchmark(int* beg, int* end) {
         }
     }
 
-    uint64_t start, end;
+    uint64_t start_time, end_time;
     unsigned int cycles_low0, cycles_high0, cycles_low1, cycles_high1;
     uint64_t sum = 0;
     uint64_t sum_times = 0;
@@ -61,13 +61,13 @@ p += 1024;
         :: "%rax", "%rbx", "%rcx", "%rdx"
         );
         
-        start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
-        end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
-        if((end - start) < 0) {
-            printf("wrong timing: start:%lu, end:%lu ...\n", start, end);
+        start_time = (((uint64_t)cycles_high0 << 32) | cycles_low0);
+        end_time = (((uint64_t)cycles_high1 << 32) | cycles_low1);
+        if((end_time - start_time) < 0) {
+            printf("wrong timing: start:%lu, end:%lu ...\n", start_time, end_time);
             times[i] = 0;
         } else {
-            times[i] = end - start;
+            times[i] = end_time - start_time;
             sum_times = sum_times + times[i];
         }
     }
@@ -93,7 +93,7 @@ uint64_t benchmark_write(int* beg, int* end) {
         }
     }
 
-    uint64_t start, end;
+    uint64_t start_time, end_time;
     unsigned int cycles_low0, cycles_high0, cycles_low1, cycles_high1;
     uint64_t sum = 0;
     uint64_t sum_times = 0;
@@ -125,13 +125,13 @@ p += 1024;
         :: "%rax", "%rbx", "%rcx", "%rdx"
         );
         
-        start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
+        start_time = (((uint64_t)cycles_high0 << 32) | cycles_low0);
         end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
-        if((end - start) < 0) {
-            printf("wrong timing: start:%lu, end:%lu ...\n", start, end);
+        if((end_time - start_time) < 0) {
+            printf("wrong timing: start:%lu, end:%lu ...\n", start_time, end_time);
             times[i] = 0;
         } else {
-            times[i] = end - start;
+            times[i] = end_time - start_time;
             sum_times = sum_times + times[i];
         }
     }
