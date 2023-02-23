@@ -7,7 +7,7 @@
 #define BOUND_OF_LOOP 10 // outer loop
 #define MINBYTES (1 << 10)  // Working set size ranges from 1 KB
 #define MAXBYTES (1 << 26)  // up to 64 MB
-//#define MAXBYTES (1 << 23)  // up to 8 MB
+// #define MAXBYTES (1 << 23)  // up to 8 MB
 #define MAXSTRIDE 48        // Strides range from 1 to 48
 // #define MAXSTRIDE 5      
 #define STRIDESTRIDE 2      // increment stride by this amount each time
@@ -133,7 +133,7 @@ int main() {
     init_data(data, MAXELEMS);
     double Mhz = mhz();
     double rst;
-    for (int stride = 1; stride <= MAXSTRIDE; stride += STRIDESTRIDE) {
+    for (int stride = 2; stride <= MAXSTRIDE; stride += STRIDESTRIDE) {
         fprintf(rstfd, "====== with %lu bytes stride ======\n", stride * sizeof(TYPE));
         for (int arraysize = MINBYTES; arraysize <= MAXBYTES; arraysize <<= 1) {
             printf("====== Measuring %d KB with %lu bytes stride ======\n", arraysize / 1024, stride * sizeof(TYPE));
