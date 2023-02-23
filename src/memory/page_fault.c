@@ -118,10 +118,10 @@ void run(int size, int page_num, FILE* dat_fd) {
     printf("variance:%.2f\n", variance);
     printf("variance of mean:%.2f\n", variance_of_mean);
     printf("maximum deviation:%lu\n", max_deviation);
-    printf("batch size: %d, size of statistic: %d\n", BOUND_OF_LOOP, SIZE_OF_STAT);
-    printf("mean:%.2f\n", mean);
-    printf("variance:%.2f\n", variance);
-    printf("variance of mean:%.2f\n", variance_of_mean);
+
+    double disk_speed = get_throughput(PAGE_SIZE, 1, mean);
+    printf("disk transfer rate: %.2f\n", disk_speed);
+
     
     fprintf(dat_fd, "%d %.2f\n", page_num, mean);
 
