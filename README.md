@@ -84,3 +84,16 @@ sudo cpupower frequency-set -d 3.10GHz
 taskset -c 0 program
 ```
 - [sched_setaffinity](https://man7.org/linux/man-pages/man2/sched_setaffinity.2.html)
+3. get page size
+```sh
+getconf PAGESIZE #4096B
+```
+4. generate certain size file
+```sh
+truncate -s 1G 1G
+ls -lh
+```
+5. get #page fault
+```sh
+/usr/bin/time -v execfile
+```
