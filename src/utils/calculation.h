@@ -121,7 +121,7 @@ extern double get_throughput(long size, int stride, double cycles) {
     start = (((uint64_t)cycles_high0 << 32) | cycles_low0);
     end = (((uint64_t)cycles_high1 << 32) | cycles_low1);
     freq = (end - start) / (1e6 * 2);
-    printf("Running on a %.2f Mhz CPU\n", freq);
+    // printf("Running on a %.2f Mhz CPU\n", freq);
 
     return (size / stride) / (cycles / freq);
 }
