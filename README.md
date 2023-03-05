@@ -5,7 +5,7 @@ Full Report on [OverLeaf](https://www.overleaf.com/read/trttfkjfsvgq)
 # Build
 ```sh
 mkdir bin
-make [cpu/mem/disk/network]
+make [cpu/mem/net/fs]
 ```
 
 # Introduction
