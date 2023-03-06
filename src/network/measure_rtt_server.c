@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <string.h>
 #include <netinet/in.h>
 
 #define PORT 8080
@@ -9,6 +10,7 @@ int main() {
     struct sockaddr_in address;
     int server_sd, conn;
     int addrlen = sizeof(address);
+    char *message = "!";
     char buffer[1024] = {'0'};
     // AF_INET: local communication, SOCK_STREAM: TCP, 0: IP protocol 
     if ((server_sd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -32,6 +34,7 @@ int main() {
     }
     
     read(conn, buffer, 1024);
+    send(conn, message, strlen(message), 0);
     printf("received: %s\n", buffer);
     close(server_sd);
     exit(EXIT_SUCCESS);
