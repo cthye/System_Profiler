@@ -10,7 +10,7 @@ int main() {
     struct sockaddr_in address;
     int server_sd, conn;
     int addrlen = sizeof(address);
-    char *message = "!";
+    char *message = "TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!";
     char buffer[1024] = {'0'};
     // AF_INET: local communication, SOCK_STREAM: TCP, 0: IP protocol 
     if ((server_sd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -32,10 +32,10 @@ int main() {
         perror("accept failed");
         exit(EXIT_FAILURE);
     }
-    
-    read(conn, buffer, 1024);
-    send(conn, message, strlen(message), 0);
-    printf("received: %s\n", buffer);
+    while (1) {
+        read(conn, buffer, 1024);
+        send(conn, message, strlen(message), 0);
+    }
     close(server_sd);
     exit(EXIT_SUCCESS);
 }
