@@ -7,6 +7,8 @@
 #include "../utils/calculation.h"
 
 #define PORT 8080
+#define SIZE_OF_STAT 100 // inner loop
+#define BOUND_OF_LOOP 100 // outer loop
 
 double mhz() {
     printf("====== Measuring CPU frequency ======\n");
@@ -58,23 +60,25 @@ int main() {
         }
     }
     double Mhz = mhz();
-    // AF_INET: local communication, SOCK_STREAM: TCP, 0: IP protocol
-    if ((client_sd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        perror("create socket failed");
-        exit(EXIT_FAILURE);
-    }
+
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT);
     if (inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr) <= 0) {
         perror("convert failed");
         exit(EXIT_FAILURE);
     }
-    if ((status = connect(client_sd, (struct sockaddr*)&server_addr, sizeof(server_addr))) < 0) {
-        perror("connect failed");
-        exit(EXIT_FAILURE);
-    }
+
     for (int i = 0; i <= BOUND_OF_LOOP; i += 1) {
         for (int j = 0; j < SIZE_OF_STAT; j += 1) {
+            // AF_INET: local communication, SOCK_STREAM: TCP, 0: IP protocol
+            if ((client_sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+                perror("create socket failed");
+                exit(EXIT_FAILURE);
+            }
+            if ((status = connect(client_sd, (struct sockaddr*)&server_addr, sizeof(server_addr))) < 0) {
+                perror("connect failed");
+                exit(EXIT_FAILURE);
+            }
             __asm__ volatile (
             "cpuid\n\t"
             "rdtsc\n\t"
@@ -84,8 +88,14 @@ int main() {
             :: "%rax", "%rbx", "%rcx", "%rdx"
             );
 
-            send(client_sd, message, strlen(message), 0);
-            read(client_sd, buffer, 1024);
+            if (send(client_sd, message, strlen(message), 0) < 0) {
+                perror("send failed");
+                exit(EXIT_FAILURE);
+            }
+            if (recv(client_sd, buffer, sizeof(buffer), 0) < 0) {
+                perror("receive failed");
+                exit(EXIT_FAILURE);
+            }
 
             __asm__ volatile (
             "rdtscp\n\t"
@@ -102,6 +112,7 @@ int main() {
             } else {
                 rst[i][j] = end - start;
             }
+            close(client_sd);
         }
     }
     double mean = 0;
@@ -117,6 +128,5 @@ int main() {
     printf("variance:%.5f ms\n", variance / Mhz / 1000);
     printf("variance of mean:%.5f ms\n", variance_of_mean / Mhz / 1000);
     printf("maximum deviation:%lu\n", max_deviation);
-    close(client_sd);
     exit(EXIT_SUCCESS);
 }

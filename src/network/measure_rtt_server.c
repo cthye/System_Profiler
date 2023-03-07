@@ -2,18 +2,26 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include <signal.h>
 #include <netinet/in.h>
 
 #define PORT 8080
 
+void PIPEhandler(int sig) {
+    signal(sig, SIG_IGN);
+    printf("yahooo~\n");
+    exit(EXIT_FAILURE);
+}
+
 int main() {
+    signal(SIGPIPE, PIPEhandler);
     struct sockaddr_in address;
     int server_sd, conn;
     int addrlen = sizeof(address);
     char *message = "TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!";
-    char buffer[1024] = {'0'};
+    char buffer[56] = {'0'};
     // AF_INET: local communication, SOCK_STREAM: TCP, 0: IP protocol 
-    if ((server_sd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+    if ((server_sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
         perror("create socket failed");
         exit(EXIT_FAILURE);
     }
@@ -28,14 +36,21 @@ int main() {
         perror("listen failed");
         exit(EXIT_FAILURE);
     }
-    if ((conn = accept(server_sd, (struct sockaddr*)&address, (socklen_t*)&addrlen)) < 0) {
-        perror("accept failed");
-        exit(EXIT_FAILURE);
-    }
     while (1) {
-        read(conn, buffer, 1024);
-        send(conn, message, strlen(message), 0);
+        if ((conn = accept(server_sd, (struct sockaddr*)&address, (socklen_t*)&addrlen)) < 0) {
+            perror("accept failed");
+            exit(EXIT_FAILURE);
+        }
+        if (recv(conn, buffer, sizeof(buffer), 0) < 0) {
+            perror("receive failed");
+            exit(EXIT_FAILURE);
+        }
+        if (send(conn, message, strlen(message), 0) < 0) {
+            perror("send failed");
+            exit(EXIT_FAILURE);
+        }
     }
     close(server_sd);
+    close(conn);
     exit(EXIT_SUCCESS);
 }
