@@ -158,8 +158,8 @@ int main() {
     double variance = 0;
     double variance_of_mean = 0;
     uint64_t max_deviation = 0;
-    char* filename = "../stat/rrt_rst_setup.txt";
-    do_calculation(rst_setup + 1, BOUND_OF_LOOP, SIZE_OF_STAT, &mean, &variance, &variance_of_mean, &max_deviation, filename);
+    char* filename_setup = "../stat/rrt_rst_setup.txt";
+    do_calculation(rst_setup + 1, BOUND_OF_LOOP, SIZE_OF_STAT, &mean, &variance, &variance_of_mean, &max_deviation, filename_setup);
     
     printf("=========== Setup Statistics ===========\n");
     printf("batch size: %d, size of statistic: %d\n", BOUND_OF_LOOP, SIZE_OF_STAT);
@@ -168,8 +168,8 @@ int main() {
     printf("variance of mean:%.5f ms\n", variance_of_mean / Mhz / 1000);
     printf("maximum deviation:%lu\n", max_deviation);
 
-    char* filename = "../stat/rrt_rst_close.txt";
-    do_calculation(rst_close + 1, BOUND_OF_LOOP, SIZE_OF_STAT, &mean, &variance, &variance_of_mean, &max_deviation, filename);
+    char* filename_close = "../stat/rrt_rst_close.txt";
+    do_calculation(rst_close + 1, BOUND_OF_LOOP, SIZE_OF_STAT, &mean, &variance, &variance_of_mean, &max_deviation, filename_close);
 
     printf("=========== Close Statistics ===========\n");
     printf("batch size: %d, size of statistic: %d\n", BOUND_OF_LOOP, SIZE_OF_STAT);
