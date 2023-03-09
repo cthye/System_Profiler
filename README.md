@@ -35,7 +35,6 @@ sudo lshw -C memory
 - DRAM type: SODIMM (DDR4)
 - Clock: 2400MHz (0.4ns)
 - Capacity: 8GiB
-- Bus bandwidth: 64bits
 3. I/O
 ```sh
 lspci -v
