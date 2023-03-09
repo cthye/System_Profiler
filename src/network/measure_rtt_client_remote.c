@@ -6,7 +6,7 @@
 #include "../utils/constant.h"
 #include "../utils/calculation.h"
 
-#define PORT 8080
+#define PORT 8081
 #define SIZE_OF_STAT 100 // inner loop
 #define BOUND_OF_LOOP 50 // outer loop
 
@@ -63,14 +63,15 @@ int main() {
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(PORT);
-    if (inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr) <= 0) {
+    // TODO: remote IP
+    if (inet_pton(AF_INET, "172.20.10.3", &server_addr.sin_addr) <= 0) {
         perror("convert failed");
         exit(EXIT_FAILURE);
     }
 
     for (int i = 0; i <= BOUND_OF_LOOP; i += 1) {
         for (int j = 0; j < SIZE_OF_STAT; j += 1) {
-            // AF_INET: local communication, SOCK_STREAM: TCP, 0: IP protocol
+            // SOCK_STREAM: TCP
             if ((client_sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
                 perror("create socket failed");
                 exit(EXIT_FAILURE);
@@ -119,7 +120,7 @@ int main() {
     double variance = 0;
     double variance_of_mean = 0;
     uint64_t max_deviation = 0;
-    char* filename = "../stat/rrt_rst.txt";
+    char* filename = "../stat/rrt_rst_remote.txt";
     do_calculation(rst + 1, BOUND_OF_LOOP, SIZE_OF_STAT, &mean, &variance, &variance_of_mean, &max_deviation, filename);
 
     printf("=========== Statistics ===========\n");

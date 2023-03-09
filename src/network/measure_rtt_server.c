@@ -5,7 +5,7 @@
 #include <signal.h>
 #include <netinet/in.h>
 
-#define PORT 8081
+#define PORT 8080
 
 void PIPEhandler(int sig) {
     signal(sig, SIG_IGN);
