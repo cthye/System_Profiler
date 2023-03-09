@@ -6,9 +6,9 @@
 #include "../utils/constant.h"
 #include "../utils/calculation.h"
 
-#define PORT 8080
+#define PORT 8081
 #define SIZE_OF_STAT 100 // inner loop
-#define BOUND_OF_LOOP 100 // outer loop
+#define BOUND_OF_LOOP 10 // outer loop
 
 double mhz() {
     printf("====== Measuring CPU frequency ======\n");

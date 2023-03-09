@@ -5,7 +5,7 @@
 #include <signal.h>
 #include <netinet/in.h>
 
-#define PORT 8080
+#define PORT 8081
 
 void PIPEhandler(int sig) {
     signal(sig, SIG_IGN);
@@ -20,7 +20,7 @@ int main() {
     int addrlen = sizeof(address);
     char *message = "TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!!TAOTAO!";
     char buffer[56] = {'0'};
-    // AF_INET: local communication, SOCK_STREAM: TCP, 0: IP protocol 
+    // AF_INET: local communication, SOCK_STREAM: TCP
     if ((server_sd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
         perror("create socket failed");
         exit(EXIT_FAILURE);
