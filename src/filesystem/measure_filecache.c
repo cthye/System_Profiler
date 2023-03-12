@@ -62,7 +62,7 @@ uint64_t readFile(FILE *fd, char *buffer, ULL size) {
 }
 
 int main () {
-    FILE *fd = fopen("/media/stevie/SSD1/testfile", "r"); // a 10GB file
+    FILE *fd = fopen("/media/stevie/SSD1/testfile", "r"); // a 20GB file
     if(!fd) {
         printf("open file failed\n");
         return -1;
