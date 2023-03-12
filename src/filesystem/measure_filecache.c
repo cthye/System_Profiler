@@ -5,13 +5,13 @@
 #include "../utils/calculation.h"
 
 #define BOUND_OF_LOOP 10
-#define SIZE_OF_STAT 50
+#define SIZE_OF_STAT 5
 #define ULL unsigned long long
 #define xGB(x) ((ULL)x * 1024 * 1024 * 1024)
 #define BLOCKSIZE 4096
-#define MIN_SIZE xGB(1)
-#define MAX_SIZE xGB(10)
-#define SIZE_STRIDE MIN_SIZE
+#define MIN_SIZE xGB(10)
+#define MAX_SIZE xGB(14)
+#define SIZE_STRIDE xGB(1)
 
 
 // warm up file buffer cache, read from the end
@@ -27,11 +27,12 @@ void warmup(FILE *fd, char *buffer, ULL size) {
 }
 
 // return the cycles required for reading a file of size **size**
-unsigned readFile(FILE *fd, char *buffer, ULL size) {
+uint64_t readFile(FILE *fd, char *buffer, ULL size) {
     warmup(fd, buffer, size);
     fseek(fd, 0, SEEK_SET);
     unsigned cycles_low0, cycles_high0, cycles_low1, cycles_high1;
     uint64_t start, end;
+    ULL blockn = size / BLOCKSIZE;
     __asm__ volatile (
             "cpuid\n\t"
             "rdtsc\n\t"
@@ -41,7 +42,7 @@ unsigned readFile(FILE *fd, char *buffer, ULL size) {
             :: "%rax", "%rbx", "%rcx", "%rdx"
             );
     
-    for (int i = 0; i < size / BLOCKSIZE / 4; i += 1) {
+    for (ULL i = 0; i < blockn; i += 4) {
         fread(buffer, BLOCKSIZE, 1, fd);
         fread(buffer, BLOCKSIZE, 1, fd);
         fread(buffer, BLOCKSIZE, 1, fd);
@@ -61,9 +62,16 @@ unsigned readFile(FILE *fd, char *buffer, ULL size) {
 }
 
 int main () {
-    FILE *fd = fopen("testfile", O_RDONLY); // a 10GB file
+    FILE *fd = fopen("/media/stevie/SSD1/testfile", "r"); // a 10GB file
+    if(!fd) {
+        printf("open file failed\n");
+        return -1;
+    }
     char *buffer = malloc(BLOCKSIZE * sizeof(char));
-    ULL size = xGB(1);
+    double mean = 0;
+    double variance = 0;
+    double variance_of_mean = 0;
+    uint64_t max_deviation = 0;
 
     uint64_t **times; // store #BOUND_OF_LOOP * SIZE_OF_STAT "time"
     times = malloc((BOUND_OF_LOOP)* sizeof(uint64_t*)); // omit the first batch for warm cache
@@ -81,29 +89,28 @@ int main () {
         }
     }
 
-    for (int i = 0; i < BOUND_OF_LOOP; i += 1) {
-        for (int j = 0; j < SIZE_OF_STAT; j += 1) {
-            times[i][j] = readFile(fd, buffer, size);
-            if (times[i][j] < 0) {
-                printf("wrong time\n");
-                times[i][j] = 0;
+    for (ULL size = MIN_SIZE; size <= MAX_SIZE; size += SIZE_STRIDE) {
+        ULL blockn = size / BLOCKSIZE;
+        for (int i = 0; i < BOUND_OF_LOOP; i += 1) {
+            for (int j = 0; j < SIZE_OF_STAT; j += 1) {
+                times[i][j] = readFile(fd, buffer, size) / blockn;
+                if (times[i][j] < 0) {
+                    printf("wrong time\n");
+                    times[i][j] = 0;
+                }
             }
         }
+        
+        char* filename = malloc(50 * sizeof(char));
+        sprintf(filename, "../stat/measure_filecache_%lluGB", size / xGB(1));
+        do_calculation(times, BOUND_OF_LOOP, SIZE_OF_STAT, &mean, &variance, &variance_of_mean, &max_deviation, filename);
+        printf("====================== Statistics of Reading %llu GB file ==================\n", size / xGB(1));
+        printf("batch size: %d, size of statistic: %d\n", BOUND_OF_LOOP, SIZE_OF_STAT);
+        printf("mean per block:%.2f\n", mean);
+        printf("variance:%.2f\n", variance);
+        printf("variance of mean:%.2f\n", variance_of_mean);
+        printf("maximum deviation:%lu\n", max_deviation);
     }
-
-    double mean = 0;
-    double variance = 0;
-    double variance_of_mean = 0;
-    uint64_t max_deviation = 0;
-    char* filename = "../stat/measure_read_bandwidth.txt";
-    do_calculation(times + 1, BOUND_OF_LOOP, SIZE_OF_STAT, &mean, &variance, &variance_of_mean, &max_deviation, filename);
-
-    printf("====================== Statistics of reading %llu GB file ==================\n", size / MIN_SIZE);
-    printf("batch size: %d, size of statistic: %d\n", BOUND_OF_LOOP, SIZE_OF_STAT);
-    printf("mean:%.2f\n", mean);
-    printf("variance:%.2f\n", variance);
-    printf("variance of mean:%.2f\n", variance_of_mean);
-    printf("maximum deviation:%lu\n", max_deviation);
 
     for(int i = 0; i < BOUND_OF_LOOP; i++) {
         free(times[i]);
