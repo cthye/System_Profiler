@@ -4,7 +4,7 @@
 #include <fcntl.h>
 #include "../utils/calculation.h"
 
-#define BOUND_OF_LOOP 10
+#define BOUND_OF_LOOP 3
 #define SIZE_OF_STAT 5
 #define ULL unsigned long long
 #define xGB(x) ((ULL)x * 1024 * 1024 * 1024)
@@ -74,13 +74,13 @@ int main () {
     uint64_t max_deviation = 0;
 
     uint64_t **times; // store #BOUND_OF_LOOP * SIZE_OF_STAT "time"
-    times = malloc((BOUND_OF_LOOP)* sizeof(uint64_t*)); // omit the first batch for warm cache
+    times = malloc((BOUND_OF_LOOP + 1)* sizeof(uint64_t*)); // omit the first batch for warm cache
     if(!times) {
         printf("failed to allocate memory to times...\n");
         return -1;
     }
 
-    for(int i = 0; i < BOUND_OF_LOOP; i++) {
+    for(int i = 0; i <= BOUND_OF_LOOP; i++) {
         times[i] = malloc(SIZE_OF_STAT * sizeof(uint64_t));
         if(!times[i]) {
             printf("failed to allocate memory to times[%d]...\n", i);
@@ -91,7 +91,7 @@ int main () {
 
     for (ULL size = MIN_SIZE; size <= MAX_SIZE; size += SIZE_STRIDE) {
         ULL blockn = size / BLOCKSIZE;
-        for (int i = 0; i < BOUND_OF_LOOP; i += 1) {
+        for (int i = 0; i <= BOUND_OF_LOOP; i += 1) {
             for (int j = 0; j < SIZE_OF_STAT; j += 1) {
                 times[i][j] = readFile(fd, buffer, size) / blockn;
                 if (times[i][j] < 0) {
@@ -103,7 +103,7 @@ int main () {
         
         char* filename = malloc(50 * sizeof(char));
         sprintf(filename, "../stat/measure_filecache_%lluGB", size / xGB(1));
-        do_calculation(times, BOUND_OF_LOOP, SIZE_OF_STAT, &mean, &variance, &variance_of_mean, &max_deviation, filename);
+        do_calculation(times + 1, BOUND_OF_LOOP, SIZE_OF_STAT, &mean, &variance, &variance_of_mean, &max_deviation, filename);
         printf("====================== Statistics of Reading %llu GB file ==================\n", size / xGB(1));
         printf("batch size: %d, size of statistic: %d\n", BOUND_OF_LOOP, SIZE_OF_STAT);
         printf("mean per block:%.2f\n", mean);
@@ -112,7 +112,7 @@ int main () {
         printf("maximum deviation:%lu\n", max_deviation);
     }
 
-    for(int i = 0; i < BOUND_OF_LOOP; i++) {
+    for(int i = 0; i <= BOUND_OF_LOOP; i++) {
         free(times[i]);
     }
     free(times);
