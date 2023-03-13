@@ -5,12 +5,12 @@
 #include "../utils/calculation.h"
 
 #define BOUND_OF_LOOP 3
-#define SIZE_OF_STAT 5
+#define SIZE_OF_STAT 8
 #define ULL unsigned long long
 #define xGB(x) ((ULL)x * 1024 * 1024 * 1024)
 #define BLOCKSIZE 4096
-#define MIN_SIZE xGB(10)
-#define MAX_SIZE xGB(14)
+#define MIN_SIZE xGB(1)
+#define MAX_SIZE xGB(8)
 #define SIZE_STRIDE xGB(1)
 
 
@@ -89,6 +89,12 @@ int main () {
         }
     }
 
+    char *output = "../stat/measure_filecache_rst.txt";
+    FILE *ofile = fopen(output, "w");
+    if (!ofile) {
+        printf("open file failed\n");
+        return -1;
+    }
     for (ULL size = MIN_SIZE; size <= MAX_SIZE; size += SIZE_STRIDE) {
         ULL blockn = size / BLOCKSIZE;
         for (int i = 0; i <= BOUND_OF_LOOP; i += 1) {
@@ -110,6 +116,7 @@ int main () {
         printf("variance:%.2f\n", variance);
         printf("variance of mean:%.2f\n", variance_of_mean);
         printf("maximum deviation:%lu\n", max_deviation);
+        fprintf(ofile, "%llu %.2f\n", size / xGB(1), mean);
     }
 
     for(int i = 0; i <= BOUND_OF_LOOP; i++) {
