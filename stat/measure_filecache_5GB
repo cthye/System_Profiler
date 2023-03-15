@@ -1,0 +1,31 @@
+================================ raw data ===========================
+times 0(batch) : 0 -- 1869
+times 0(batch) : 1 -- 1855
+times 0(batch) : 2 -- 2061
+times 0(batch) : 3 -- 1734
+times 0(batch) : 4 -- 1801
+times 0(batch) : 5 -- 1814
+times 0(batch) : 6 -- 1750
+times 0(batch) : 7 -- 1843
+times 1(batch) : 0 -- 1886
+times 1(batch) : 1 -- 1805
+times 1(batch) : 2 -- 1882
+times 1(batch) : 3 -- 1917
+times 1(batch) : 4 -- 1945
+times 1(batch) : 5 -- 1795
+times 1(batch) : 6 -- 1837
+times 1(batch) : 7 -- 1832
+times 2(batch) : 0 -- 1937
+times 2(batch) : 1 -- 1806
+times 2(batch) : 2 -- 1917
+times 2(batch) : 3 -- 1863
+times 2(batch) : 4 -- 1682
+times 2(batch) : 5 -- 1679
+times 2(batch) : 6 -- 1680
+times 2(batch) : 7 -- 1677
+====================================================================
+batch size: 3, size of statistic: 8
+mean:1827.791667
+variance:95.693304
+variance of mean:34.83
+maximum deviation:384

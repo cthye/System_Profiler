@@ -1,0 +1,22 @@
+================================ raw data ===========================
+times 0(batch) : 0 -- 1672
+times 0(batch) : 1 -- 1673
+times 0(batch) : 2 -- 1678
+times 0(batch) : 3 -- 1676
+times 0(batch) : 4 -- 1678
+times 1(batch) : 0 -- 1672
+times 1(batch) : 1 -- 1672
+times 1(batch) : 2 -- 1674
+times 1(batch) : 3 -- 1673
+times 1(batch) : 4 -- 1673
+times 2(batch) : 0 -- 1673
+times 2(batch) : 1 -- 1672
+times 2(batch) : 2 -- 1672
+times 2(batch) : 3 -- 1672
+times 2(batch) : 4 -- 1672
+====================================================================
+batch size: 3, size of statistic: 5
+mean:1673.466667
+variance:1.425075
+variance of mean:1.39
+maximum deviation:6
