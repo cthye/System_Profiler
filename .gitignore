@@ -2,3 +2,4 @@ bin
 .vscode/
 files/*
 .DS_Store
+nfs/*
