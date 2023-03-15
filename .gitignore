@@ -2,4 +2,5 @@ bin
 .vscode/
 files/*
 .DS_Store
+report
 nfs/*
