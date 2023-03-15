@@ -74,7 +74,7 @@ void run(int size, int page_num, FILE* dat_fd) {
             //* using shared buffer can avoid copying data from kernel space back-and-from to user space
             //* notice that kernel would support file buffer read-ahead to optimize reading cost
             char* map = (char*) mmap(0, size, PROT_READ, MAP_SHARED, fd, 0);
-            // posix_madvise(map, size, POSIX_MADV_RANDOM);
+            posix_madvise(map, size, POSIX_MADV_RANDOM);
             //? overhead
             if(map == MAP_FAILED) {
                 printf("failed to mmap to file:%s\n", mmap_file);

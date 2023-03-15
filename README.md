@@ -65,7 +65,8 @@ lwconfig wlp2s0 # depends on the interface name
 - Ethernet
   - Bandwidth: 1000 Mb/s
 - Wireless
-  - Bandwidth: 400 Mb/s
+  - Ubuntu: Bandwidth: 400 Mb/s
+  - MacOS (for gradhousing's WiFi) transmit rate: 400 Mbps
 6. Operating System
 - Ubuntu 16.04.4 LTS
 7. Notebook Description
@@ -96,3 +97,28 @@ ls -lh
 ```sh
 /usr/bin/time -v execfile
 ```
+6. Create NFS (server) on MacOS and connect from Ubuntu (client) with SMB protocol
+- step1: open file sharing on MacOS (System Preference, search "file sharing")
+- step2: create shared directory (default: Public) in the panel with "+"
+- step3: install cifs-utils on Ubuntu 
+```sh
+sudo apt-get install cifs-utils
+```
+- step4: 
+```sh
+sudo mount -t cifs //$ip/$remote_dir $local_dir -o username=$account,password=$password,nounix
+```
+- step5:
+```sh
+sudo umount -f -l $local_dir
+```
+7. Cancel file buffer cache
+- flush buffer cache with command (not sticky):
+  ```sh
+  sudo sh -c "sync; echo 3 > /proc/sys/vm/drop_caches"
+  ```
+  https://unix.stackexchange.com/questions/17936/setting-proc-sys-vm-drop-caches-to-clear-cache
+- see current buff cache size
+  ```sh
+  free -h
+  ```

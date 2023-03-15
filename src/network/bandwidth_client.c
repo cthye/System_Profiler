@@ -73,7 +73,7 @@ int main(int argc, char *argv[]) {
             net_bandwidth[i] = malloc(SIZE_OF_STAT * sizeof(uint64_t));
             if(!net_bandwidth[i]) {
                 printf("failed to allocate memory to times[%d]...\n", i);
-                for(int j = 0; j < i; j++) free(net_bandwidth[k]);
+                for(int j = 0; j < i; j++) free(net_bandwidth[j]);
                 return -1;
             }
         }
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
             time[i] = malloc(SIZE_OF_STAT * sizeof(uint64_t));
             if(!time[i]) {
                 printf("failed to allocate memory to times[%d]...\n", i);
-                for(int j = 0; j < i; j++) free(time[k]);
+                for(int j = 0; j < i; j++) free(time[j]);
                 return -1;
             }
         }
