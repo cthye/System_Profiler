@@ -62,6 +62,8 @@ uint64_t readFile(FILE *fd, char *buffer, ULL size) {
 }
 
 int main () {
+    //FILE *fd = fopen("/media/stevie/(SSD1/testfile", "r"); // a 20GB file
+    // FILE *fd = fopen("files/test", "r");
     FILE *fd = fopen("/media/stevie/SSD1/testfile", "r"); // a 20GB file
     if(!fd) {
         printf("open file failed\n");
@@ -89,14 +91,17 @@ int main () {
         }
     }
 
+    //char *output = "../stat/measure_filecache_rst.txt";
+    // char *output = "stat/measure_filecache_rst.txt";
     char *output = "../stat/measure_filecache_rst.txt";
     FILE *ofile = fopen(output, "w");
     if (!ofile) {
         printf("open file failed\n");
         return -1;
     }
-    for (ULL size = MIN_SIZE; size <= MAX_SIZE; size += SIZE_STRIDE) {
+    for (ULL size = MIN_SIZE; size <= MAX_SIZE;) {
         ULL blockn = size / BLOCKSIZE;
+        printf("blockNum %llu\n", blockn);
         for (int i = 0; i <= BOUND_OF_LOOP; i += 1) {
             for (int j = 0; j < SIZE_OF_STAT; j += 1) {
                 times[i][j] = readFile(fd, buffer, size) / blockn;
@@ -109,14 +114,21 @@ int main () {
         
         char* filename = malloc(50 * sizeof(char));
         sprintf(filename, "../stat/measure_filecache_%lluGB", size / xGB(1));
+        // sprintf(filename, "stat/measure_filecache_%lluGB", size / xGB(1));
         do_calculation(times + 1, BOUND_OF_LOOP, SIZE_OF_STAT, &mean, &variance, &variance_of_mean, &max_deviation, filename);
-        printf("====================== Statistics of Reading %llu GB file ==================\n", size / xGB(1));
+        printf("====================== Statistics of Reading %llu GB file and %llu B==================\n", size / xGB(1), size);
         printf("batch size: %d, size of statistic: %d\n", BOUND_OF_LOOP, SIZE_OF_STAT);
         printf("mean per block:%.2f\n", mean);
         printf("variance:%.2f\n", variance);
         printf("variance of mean:%.2f\n", variance_of_mean);
         printf("maximum deviation:%lu\n", max_deviation);
         fprintf(ofile, "%llu %.2f\n", size / xGB(1), mean);
+        if(size >= xGB(6)) {
+            size += xGB(1) / 4;
+        } else {
+            size += SIZE_STRIDE;
+            //size += xGB(1) / 4;
+        }
     }
 
     for(int i = 0; i <= BOUND_OF_LOOP; i++) {

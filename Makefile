@@ -29,6 +29,10 @@ $(OBJS_NET): %: $(SOURCEDIR_NET)/%.c $(UTILSDIR)/*.h
 fs: $(OBJS_FS)
 $(OBJS_FS): %: $(SOURCEDIR_FS)/%.c $(UTILSDIR)/*.h
 	$(CC) $(CFLAGS) -o $(EXECUTABLEDIR)/$@ $< $(LDLIBS)
+<<<<<<< HEAD
+	
+=======
   
+>>>>>>> main
 clean:
 	rm -f $(EXECUTABLEDIR)/*

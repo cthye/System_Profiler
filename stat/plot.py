@@ -33,3 +33,19 @@ for group in groups:
 plt.legend(loc = (1.05, -0.15))
 # plt.show()        
 plt.savefig(save_dir+"part1.png", bbox_inches="tight")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
+
+fig2, ax2 = plt.subplots()
+ax2.set_xlabel("log2(ArraySize) (Bytes)")
+ax2.set_ylabel("Latency (us)")
+groups = np.unique(data[:, 0])
+for group in groups:
+    group_data = data[data[:, 0] == group]
+    x = group_data[:, 1]
+    y = group_data[:, 2]
+    log_x = np.log2(x)
+    if group % 3 == 1:
+        plt.plot(log_x, x / 8.0 / y, label = f'{int(group) * 8} Bytes Stride')
+    print(x / 8.0 / y)
+plt.legend(loc = (1.05, -0.15))
+# plt.show()
+plt.savefig(save_dir+"latency.png", bbox_inches="tight")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        

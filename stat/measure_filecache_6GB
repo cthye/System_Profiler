@@ -1,31 +1,31 @@
 ================================ raw data ===========================
-times 0(batch) : 0 -- 1874
-times 0(batch) : 1 -- 1767
-times 0(batch) : 2 -- 1853
-times 0(batch) : 3 -- 1900
-times 0(batch) : 4 -- 1878
-times 0(batch) : 5 -- 1690
-times 0(batch) : 6 -- 1683
-times 0(batch) : 7 -- 1674
-times 1(batch) : 0 -- 1675
-times 1(batch) : 1 -- 1676
-times 1(batch) : 2 -- 1678
-times 1(batch) : 3 -- 1673
-times 1(batch) : 4 -- 1675
-times 1(batch) : 5 -- 1673
-times 1(batch) : 6 -- 1672
-times 1(batch) : 7 -- 1674
-times 2(batch) : 0 -- 1673
-times 2(batch) : 1 -- 1673
-times 2(batch) : 2 -- 1673
-times 2(batch) : 3 -- 1673
-times 2(batch) : 4 -- 1675
-times 2(batch) : 5 -- 1674
-times 2(batch) : 6 -- 1683
-times 2(batch) : 7 -- 1674
+times 0(batch) : 0 -- 108881
+times 0(batch) : 1 -- 104398
+times 0(batch) : 2 -- 105645
+times 0(batch) : 3 -- 104837
+times 0(batch) : 4 -- 104179
+times 0(batch) : 5 -- 106774
+times 0(batch) : 6 -- 104617
+times 0(batch) : 7 -- 105881
+times 1(batch) : 0 -- 106488
+times 1(batch) : 1 -- 104988
+times 1(batch) : 2 -- 111072
+times 1(batch) : 3 -- 104264
+times 1(batch) : 4 -- 108089
+times 1(batch) : 5 -- 104803
+times 1(batch) : 6 -- 105931
+times 1(batch) : 7 -- 106033
+times 2(batch) : 0 -- 105106
+times 2(batch) : 1 -- 105409
+times 2(batch) : 2 -- 104533
+times 2(batch) : 3 -- 106572
+times 2(batch) : 4 -- 104567
+times 2(batch) : 5 -- 111409
+times 2(batch) : 6 -- 105291
+times 2(batch) : 7 -- 104938
 ====================================================================
 batch size: 3, size of statistic: 8
-mean:1713.041667
-variance:22.036597
-variance of mean:54.33
-maximum deviation:228
+mean:106029.375000
+variance:1941.393795
+variance of mean:331.44
+maximum deviation:7230

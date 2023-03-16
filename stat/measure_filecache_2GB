@@ -1,31 +1,31 @@
 ================================ raw data ===========================
-times 0(batch) : 0 -- 1682
-times 0(batch) : 1 -- 1680
-times 0(batch) : 2 -- 1679
-times 0(batch) : 3 -- 1711
-times 0(batch) : 4 -- 1680
-times 0(batch) : 5 -- 1805
-times 0(batch) : 6 -- 1808
-times 0(batch) : 7 -- 1880
-times 1(batch) : 0 -- 1903
-times 1(batch) : 1 -- 1767
-times 1(batch) : 2 -- 1802
-times 1(batch) : 3 -- 1750
-times 1(batch) : 4 -- 1761
-times 1(batch) : 5 -- 1968
-times 1(batch) : 6 -- 2180
-times 1(batch) : 7 -- 2258
-times 2(batch) : 0 -- 2221
-times 2(batch) : 1 -- 1808
-times 2(batch) : 2 -- 1824
-times 2(batch) : 3 -- 1765
-times 2(batch) : 4 -- 1805
-times 2(batch) : 5 -- 1945
-times 2(batch) : 6 -- 1800
-times 2(batch) : 7 -- 1873
+times 0(batch) : 0 -- 2334
+times 0(batch) : 1 -- 2337
+times 0(batch) : 2 -- 2334
+times 0(batch) : 3 -- 2337
+times 0(batch) : 4 -- 2337
+times 0(batch) : 5 -- 2341
+times 0(batch) : 6 -- 2337
+times 0(batch) : 7 -- 2335
+times 1(batch) : 0 -- 2336
+times 1(batch) : 1 -- 2333
+times 1(batch) : 2 -- 2335
+times 1(batch) : 3 -- 2338
+times 1(batch) : 4 -- 2337
+times 1(batch) : 5 -- 2337
+times 1(batch) : 6 -- 2336
+times 1(batch) : 7 -- 2336
+times 2(batch) : 0 -- 2338
+times 2(batch) : 1 -- 2337
+times 2(batch) : 2 -- 2336
+times 2(batch) : 3 -- 2335
+times 2(batch) : 4 -- 2335
+times 2(batch) : 5 -- 2338
+times 2(batch) : 6 -- 2336
+times 2(batch) : 7 -- 2337
 ====================================================================
 batch size: 3, size of statistic: 8
-mean:1848.125000
-variance:126.388987
-variance of mean:78.06
-maximum deviation:579
+mean:2336.333333
+variance:1.614907
+variance of mean:0.24
+maximum deviation:8
