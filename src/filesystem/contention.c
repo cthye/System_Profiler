@@ -10,8 +10,8 @@
 #define BLOCKSIZE 4096
 #define BOUND_OF_LOOP 10
 #define SIZE_OF_STAT 20
-#define MIN_PROCESSES 2
-#define MAX_PROCESSES 4
+#define MIN_PROCESSES 6
+#define MAX_PROCESSES 16
 #define ULL unsigned long long
 #define xMB(x) ((ULL)x * 1024 * 1024)
 #define FILESIZE xMB(32)
