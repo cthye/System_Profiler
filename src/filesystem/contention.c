@@ -9,13 +9,13 @@
 #define MAX_BLOCK_READ_COUNT 1024
 #define BLOCKSIZE 4096
 #define BOUND_OF_LOOP 10
-#define SIZE_OF_STAT 10
+#define SIZE_OF_STAT 20
 #define MIN_PROCESSES 2
-#define MAX_PROCESSES 3
+#define MAX_PROCESSES 4
 #define ULL unsigned long long
 #define xMB(x) ((ULL)x * 1024 * 1024)
 #define FILESIZE xMB(32)
-#define NBLOCK FILESIZE / BLOCKSIZE
+#define NBLOCK (FILESIZE / BLOCKSIZE)
 
 int main() {
     char *buffer = malloc(BLOCKSIZE * sizeof(char));
@@ -46,6 +46,11 @@ int main() {
         printf("open file failed\n");
         return -1;
     }
+    double *rst = malloc((MAX_PROCESSES - MIN_PROCESSES) * sizeof(double));
+    if(!rst) {
+        printf("allocate rst array failed...\n");
+        return 0;
+    }
 
     unsigned cycles_low0, cycles_high0, cycles_low1, cycles_high1;
     uint64_t start, end;
@@ -56,6 +61,8 @@ int main() {
             for (int j = 0; j < SIZE_OF_STAT; j++) {
                 pid_t *child_pids = malloc(sizeof(pid_t) * processN);
                 uint64_t *childrenAvgReadTime = malloc(sizeof(uint64_t) * processN);
+                int pipes[2];
+                pipe(pipes);
 
                 for (int child = 0; child < processN; child += 1) {
                     pid_t child_pid = fork();
@@ -68,6 +75,7 @@ int main() {
                             printf("open file %s failed\n", filename);
                             return 0;
                         }
+                        close(pipes[0]); // no reading
 
                         for (ULL n = 0; n < NBLOCK; n += 1) {
                             __asm__ volatile(
@@ -96,14 +104,15 @@ int main() {
                             posix_fadvise(fd, n * BLOCKSIZE, BLOCKSIZE, POSIX_FADV_DONTNEED);
                         }
                         childrenAvgReadTime[child] = sum / NBLOCK;
+                        write(pipes[1], &childrenAvgReadTime[child], sizeof(uint64_t));
+                        close(pipes[1]);
                         close(fd);
                         return 0; // end child
-                    } else {
-                        child_pids[child] = child_pid;
                     }
                 }
+                close(pipes[1]);
                 for (int n = 0; n < processN; n += 1) {
-                    wait(&child_pids[n]);
+                    read(pipes[0], &childrenAvgReadTime[n], sizeof(uint64_t));
                 }
                 uint64_t allChildrenSum = 0;
                 for(int n = 0; n < processN; n += 1) {
@@ -123,7 +132,11 @@ int main() {
         printf("variance:%.2f\n", variance);
         printf("variance of mean:%.2f\n", variance_of_mean);
         printf("maximum deviation:%lu\n", max_deviation);
-        fprintf(ofile, "%d %.2f\n", processN, mean);
+        rst[processN - MIN_PROCESSES] = mean;
+        // fprintf(ofile, "%d %.2f\n", processN, mean);
+    }
+    for (int i = MIN_PROCESSES; i <= MAX_PROCESSES; i += 1) {
+        fprintf(ofile, "%d %.2f\n", i, rst[i - MIN_PROCESSES]);
     }
     for(int i = 0; i <= BOUND_OF_LOOP; i++) {
         free(times[i]);
