@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <assert.h>
 #include "../utils/calculation.h"
 
 #define MAX_BLOCK_READ_COUNT 1024
@@ -11,10 +12,12 @@
 #define BOUND_OF_LOOP 10
 #define SIZE_OF_STAT 20
 #define MIN_PROCESSES 6
+// #define MIN_PROCESSES 12
 #define MAX_PROCESSES 16
 #define ULL unsigned long long
 #define xMB(x) ((ULL)x * 1024 * 1024)
 #define FILESIZE xMB(32)
+// #define FILESIZE xMB(1)
 #define NBLOCK (FILESIZE / BLOCKSIZE)
 
 int main() {
@@ -61,8 +64,10 @@ int main() {
             for (int j = 0; j < SIZE_OF_STAT; j++) {
                 pid_t *child_pids = malloc(sizeof(pid_t) * processN);
                 uint64_t *childrenAvgReadTime = malloc(sizeof(uint64_t) * processN);
-                int pipes[2];
-                pipe(pipes);
+                int pipes[processN][2];
+                for (int p = 0; p < processN; p++) {
+                    pipe(pipes[p]);
+                }
 
                 for (int child = 0; child < processN; child += 1) {
                     pid_t child_pid = fork();
@@ -75,7 +80,7 @@ int main() {
                             printf("open file %s failed\n", filename);
                             return 0;
                         }
-                        close(pipes[0]); // no reading
+                        close(pipes[child][0]); // no reading
 
                         for (ULL n = 0; n < NBLOCK; n += 1) {
                             __asm__ volatile(
@@ -103,21 +108,42 @@ int main() {
                             }
                             posix_fadvise(fd, n * BLOCKSIZE, BLOCKSIZE, POSIX_FADV_DONTNEED);
                         }
+                        // printf("child:%d, sum: %llu, sum / NBLOCK: %llu\n", child, sum, sum / NBLOCK);
+                        // if (sum == 0 ) {
+                            // printf(" zero !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+                        // }
                         childrenAvgReadTime[child] = sum / NBLOCK;
-                        write(pipes[1], &childrenAvgReadTime[child], sizeof(uint64_t));
-                        close(pipes[1]);
+                        assert(childrenAvgReadTime[child] > 0);
+                        write(pipes[child][1], &childrenAvgReadTime[child], sizeof(uint64_t));
+                        close(pipes[child][1]);
                         close(fd);
                         return 0; // end child
-                    }
+                    } 
                 }
-                close(pipes[1]);
+                for (int p = 0; p < processN; p++) {
+                    pid_t pid = wait(0);
+                    // printf("child %d done\n", pid);
+                }
+                for (int p = 0; p < processN; p++) {
+                    close(pipes[p][1]);
+                }
                 for (int n = 0; n < processN; n += 1) {
-                    read(pipes[0], &childrenAvgReadTime[n], sizeof(uint64_t));
+                    read(pipes[n][0], &childrenAvgReadTime[n], sizeof(uint64_t));
+                    close(pipes[n][0]);
+                    // printf("childrenAvgReadTime[%d] %llu\n", n, childrenAvgReadTime[n]);
+                    assert(childrenAvgReadTime[n] > 0);
+                    // if (n == processN - 1) {
+                        // printf("done\n");
+                    // }
                 }
                 uint64_t allChildrenSum = 0;
                 for(int n = 0; n < processN; n += 1) {
+                    // printf("childrenAvgReadTime[%d] %llu\n", n, childrenAvgReadTime[n]);
+                    assert(childrenAvgReadTime[n] > 0);
                     allChildrenSum += childrenAvgReadTime[n];
                 }
+                assert(allChildrenSum > 0);
+                // printf("allchildrensum %llu\n", allChildrenSum);
                 times[i][j] = allChildrenSum / processN;
                 free(child_pids);
                 free(childrenAvgReadTime);
