@@ -1,6 +1,6 @@
-# CSE 221 Group 9
+# CSE 221 System Profiler
 
-Full Report on [OverLeaf](https://www.overleaf.com/read/trttfkjfsvgq)
+Full Report on [google drive](https://drive.google.com/file/d/1gzSMchWW5IhgmUmyG1VDGNeFmQIP_grI/view?usp=sharing) [OverLeaf](https://www.overleaf.com/read/trttfkjfsvgq)
 
 # Build
 ```sh
